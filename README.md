@@ -16,17 +16,17 @@ The dataset for this project has been sourced from ```Kaggle``` and contains var
 
 ```Number of Pregnancies```: Total number of pregnancies experienced by the individual.
 
-```Smoking Habits```: Includes whether the individual smokes, years of smoking, and packs per year.
+```Smoking Habits```: Includes whether the individual ```smokes```, ```years of smoking```, and ```packs per year```.
 
 ```Hormonal Contraceptives```: Usage and duration of hormonal contraceptives.
 
 ```IUD Usage```: Usage and duration of Intrauterine Devices (IUD).
 
-```Sexually Transmitted Diseases (STDs)```: Includes various STDs the individual has been diagnosed with, including condylomatosis, syphilis, and HPV.
+```Sexually Transmitted Diseases (STDs)```: Includes various STDs the individual has been diagnosed with, including ```condylomatosis```, ```syphilis```, and ```HPV```.
 
-```Diagnosis Variables```: Includes indicators for cancer (Dx. Cancer), cervical intraepithelial neoplasia (Dx.CIN), and HPV status (Dx.HPV).
+```Diagnosis Variables```: Includes indicators for cancer (```Dx. Cancer```), cervical intraepithelial neoplasia (```Dx.CIN```), and HPV status (```Dx.HPV```).
 
-```Diagnostic Tests```: Results from various diagnostic tests such as ```Hinselmann```, ```Schiller```,``` Citology```, and ```Biopsy```, as we take the ```Biopsy``` feature as the ```**Dependent/Target variable**```.
+```Diagnostic Tests```: Results from various diagnostic tests such as ```Hinselmann```, ```Schiller```,``` Citology```, and ```Biopsy```, as we take the ```Biopsy``` feature as the **```Dependent/Target variable```**.
 
 This comprehensive dataset allows for a multifaceted analysis of factors contributing to cervical cancer risk, facilitating the development of a robust predictive model.
 
