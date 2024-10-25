@@ -1,5 +1,35 @@
 # Cervical Cancer Insights: Machine Learning Analysis_R
 
+## Project Overview
+
+Cervical cancer remains one of the leading causes of cancer-related deaths among women globally. Early detection and accurate prediction of cervical cancer are critical in improving treatment outcomes and saving lives. This project aims to develop a predictive model utilizing machine learning techniques to identify individuals at high risk for cervical cancer. By leveraging this ML models, healthcare providers can implement timely interventions and medical care, ultimately enhancing patient outcomes and reducing mortality rates associated with this disease.
+
+## Dataset Description
+
+The dataset for this project has been sourced from ```Kaggle``` and contains various variables that contribute to the risk assessment of cervical cancer. Key variables include:
+
+```Age```: The age of the individual.
+
+```Number of Sexual Partners```: Total count of sexual partners.
+
+```First Sexual Intercourse```: Age at which the individual had their first sexual encounter.
+
+```Number of Pregnancies```: Total number of pregnancies experienced by the individual.
+
+```Smoking Habits```: Includes whether the individual smokes, years of smoking, and packs per year.
+
+```Hormonal Contraceptives```: Usage and duration of hormonal contraceptives.
+
+```IUD Usage```: Usage and duration of Intrauterine Devices (IUD).
+
+```Sexually Transmitted Diseases (STDs)```: Includes various STDs the individual has been diagnosed with, including condylomatosis, syphilis, and HPV.
+
+```Diagnosis Variables```: Includes indicators for cancer (Dx. Cancer), cervical intraepithelial neoplasia (Dx.CIN), and HPV status (Dx.HPV).
+
+```Diagnostic Tests```: Results from various diagnostic tests such as ```Hinselmann```, ```Schiller```,``` Citology```, and ```Biopsy```, as we take the ```Biopsy``` feature as the ```**Dependent/Target variable**```.
+
+This comprehensive dataset allows for a multifaceted analysis of factors contributing to cervical cancer risk, facilitating the development of a robust predictive model.
+
 ## Step1: Importing libraries
 ```R
 # Load libraries
@@ -506,7 +536,7 @@ ggplot(combined_importance, aes(x = reorder(Feature, Importance), y = Importance
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_fill_brewer(palette = "Set1")  # Optional: change color palette
 ```
--------------------------------------------------------------------------------END-----------------------------------------------------------------------------------
+
 
 **Author**: Debolina Dutta
 
