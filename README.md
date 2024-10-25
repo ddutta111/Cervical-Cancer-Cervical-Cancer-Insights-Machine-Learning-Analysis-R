@@ -401,8 +401,8 @@ ggplot(top_5_features_dt, aes(x = reorder(Feature, Importance), y = Importance))
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-## Step 12: XGBOost Model
-```
+## Step 12: XGBoost Model
+```R
 # Convert data to matrix format for XGBoost
 dtrain <- xgb.DMatrix(data = as.matrix(X_train), label = as.numeric(as.factor(y_train)) - 1)  # Convert factor to numeric
 dtest <- xgb.DMatrix(data = as.matrix(X_test), label = as.numeric(as.factor(y_test)) - 1)  # Convert factor to numeric
@@ -471,7 +471,7 @@ ggplot(top_5_features_xgb, aes(x = reorder(Feature, Gain), y = Gain)) +
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## Step 13: Model Comparison
-```
+```R
 # Comparison of top features data frames from 5 models
 top_features_knn <- data.frame(Feature = c("Schiller", "Hinselmann", "Citology", "Dx.HPV", "Dx.Cancer"),
                                Importance = c(0.1, 0.3, 0.4, 0.2, 0.1))
