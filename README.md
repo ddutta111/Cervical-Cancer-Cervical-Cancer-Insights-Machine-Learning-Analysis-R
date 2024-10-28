@@ -52,15 +52,12 @@ library(GGally)         # For extended functions on ggplot2, including pair plot
 library(Amelia)         # For handling missing data through multiple imputation techniques, allowing for robust statistical analysis
 library(MLmetrics)      # For evaluating the performance of machine learning models for both classification and regression tasks
 ```
------------------------------------------------------------------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 ## Step 2: Importing the data
 ```R
 # Load the dataset
 data <- read.csv("D:\\R Projects\\cervical-cancer_csv.csv")
 ```
------------------------------------------------------------------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## Data Exploration & Data Pre-Processing
 > Data Summary Check
@@ -117,9 +114,29 @@ cancer_data <- cancer_data %>%
 # Check the cleaned and imputed dataset
 print(summary(cancer_data))
 ```
------------------------------------------------------------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------------------------------------------------------------
+
 ## Visually Data Exploration
+> Histogram of Numerical features distribution
+```R
+# Reshape the data for plotting
+melted_data <- cancer_data %>%
+  select(all_of(numerical_df)) %>%
+  pivot_longer(cols = everything(), names_to = "Variable", values_to = "Value")
+
+# Create histograms for each numerical column
+ggplot(melted_data, aes(x = Value)) +
+  geom_histogram(binwidth = 1, fill = "blue", color = "black", alpha = 0.7) +
+  facet_wrap(~ Variable, scales = "free_x") +
+  labs(title = "Histograms of Numerical Columns", x = "Value", y = "Frequency") +
+  theme_minimal()
+```
+![Plot histograms of Numerical features](https://github.com/user-attachments/assets/02ab92dd-5da0-46e6-9f84-45d7f83e76f2)
+
+These histograms provide valuable insights into the distribution of numerical features in the cancer data. They can help identify potential outliers, identify relationships between variables, and inform further analysis. For example, the right-skewed distributions of age, sexual activity, and smoking habits suggest that these factors might play a role in cancer development. The bimodal distribution of hormonal contraceptive usage suggests that there might be two distinct groups of patients with different risk factors.
+
+By understanding the distribution of these features, we can make informed decisions about feature engineering, and model selection for further analysis and prediction.
+
+> Separating and Summarizing Biopsy Results by Group
 ```R
 # Separating groups with positive and negative biopsy results
 biopsy_positive <- cancer_data %>% filter(Biopsy == 1)
@@ -138,11 +155,10 @@ ggplot(biopsy_df, aes(x = Var1, y = Freq, fill = Var1)) +
   labs(title = "Biopsy Results", x = "Class Labels", y = "Frequency") +
   theme_minimal()
 ```
-we explore here demographic and health variables for groups with positive and negative biopsy results:
+We explore here demographic and health variables for groups with positive and negative biopsy results:
 
 - Group Separation: Filters data into biopsy_positive (Biopsy = 1) and biopsy_negative (Biopsy = 0) for focused analysis.
-- Positive Biopsy Summary: Provides statistics for age (16–52, median 28), number of sexual partners (avg. ~2.5), smoking status (10 smoke, 44 don’t), and STD indicators (mostly zero values).
-This summary highlights key characteristics and patterns within the biopsy-positive group, which could be relevant to biopsy outcomes.
+- Positive Biopsy Summary: Provides statistics for age (16–52, median 28), number of sexual partners (avg. ~2.5), smoking status (10 smoke, 44 don’t), and STD indicators (mostly zero values). This summary highlights key characteristics and patterns within the biopsy-positive group, which could be relevant to biopsy outcomes.
 
 ![Biopsy plot](https://github.com/user-attachments/assets/d0740956-08e1-47e0-8c05-987ebfbf395b)
 
@@ -234,7 +250,7 @@ This boxplot displays the age distribution for individuals with positive and neg
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 ## **Correlation Matrix and Anova Test**
 
-> Correlation Matrix Calculation
+> Correlation Matrix Calculation for the Numerical Features
 ```R
 ## Calculate the correlation matrix for numerical columns
 correlation_matrix <- cor(cancer_data[, numerical_df], use = "complete.obs")
@@ -251,6 +267,8 @@ ggplot(correlation_melted, aes(Var1, Var2, fill = value)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
   labs(title = "Correlation Matrix Heatmap", x = "Variables", y = "Variables")
 ```
+![heatmap correlation matrix of numerical features](https://github.com/user-attachments/assets/b76bed6e-eeca-4d04-82a0-0fca714976e6)
+
 Key Observations from the Correlation Heatmap: -
 
 1. Strong Positive Correlations: (Strong red colour)
@@ -294,7 +312,7 @@ for (num_var in numerical_df) {
 The ANOVA test results indicate significant associations between various health and lifestyle variables and demographic factors such as age and smoking habits, highlighting the following key findings:
 
 - Age: Strongly significant associations with IUD usage (p < 0.001), cancer diagnosis (p = 0.0017), HPV diagnosis (p = 0.0039), and Schiller Test results (p = 0.0034) suggest that age influences these health-related outcomes.
--  Number of Sexual Partners: A significant correlation with smoking status (p < 0.001) implies that smoking behavior may relate to an individual's sexual history.
+- Number of Sexual Partners: A significant correlation with smoking status (p < 0.001) implies that smoking behavior may relate to an individual's sexual history.
 - First Sexual Intercourse Age: Smoking (p = 0.0002) and certain STDs (syphilis: p = 0.0045; vaginal condylomatosis: p = 0.033) are significantly associated with the age at which individuals first engage in sexual activity.
 - Number of Pregnancies: Significant relationships are observed with IUD usage (p < 0.001), hormonal contraceptives (p = 0.0027), and STDs (syphilis: p = 0.00003), indicating these factors may affect pregnancy frequency.
 - Smoking History: Both smoking duration (years) and intensity (packs/year) show a strong association with smoking status (p < 0.001), along with significant correlations with certain STDs (HIV: p = 0.0095; Hepatitis B: p = 0.0042) and Schiller Test results (p = 0.0064).
