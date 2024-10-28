@@ -4,6 +4,22 @@
 
 Cervical cancer remains one of the leading causes of cancer-related deaths among women globally. Early detection and accurate prediction of cervical cancer are critical in improving treatment outcomes and saving lives. This project aims to develop a predictive model utilizing machine learning techniques to identify individuals at high risk for cervical cancer. By leveraging this ML models, healthcare providers can implement timely interventions and medical care, ultimately enhancing patient outcomes and reducing mortality rates associated with this disease.
 
+## Project Objective
+
+1. The objective of this analysis is to develop predictive models for cervical cancer biopsy results using a comprehensive dataset. The steps involved in this process include:
+
+2. Dataset Description: Provide an overview of the dataset, including its structure, features, and any missing values.
+
+3. Data Preprocessing and Exploratory Data Analysis (EDA): Clean and prepare the data for analysis by handling missing values and encoding categorical variables as needed. Conduct EDA to understand the distribution of variables and identify patterns, relationships, and potential outliers within the data.
+
+4. Model Selection: Choose appropriate machine learning models, including K-Nearest Neighbors (KNN), Random Forest (RF), Decision Tree (DT), and Artificial Neural Network (ANN) for predicting biopsy results.
+
+5. Model Training and Validation: Split the data into training and testing sets, train the selected models, and validate their performance using appropriate metrics such as accuracy and F1 score.
+
+6. Feature Importance Analysis: Assess the importance of different features in making predictions, focusing on the models that support this analysis.
+
+7. Comparison and Recommendation: Compare the performance of the models based on their accuracy, F1 score, and interpretability, and provide recommendations for the best-performing model for clinical application.
+
 ## Dataset Description
 
 The dataset for this project has been sourced from ```Kaggle``` and contains various variables that contribute to the risk assessment of cervical cancer. Key variables include:
@@ -30,7 +46,7 @@ The dataset for this project has been sourced from ```Kaggle``` and contains var
 
 This comprehensive dataset allows for a multifaceted analysis of factors contributing to cervical cancer risk, facilitating the development of a robust predictive model.
 
-## Step1: Importing libraries
+## Importing libraries
 ```R
 # Load libraries
 library(tidyverse)      # For data manipulation and visualization
@@ -53,13 +69,13 @@ library(Amelia)         # For handling missing data through multiple imputation 
 library(MLmetrics)      # For evaluating the performance of machine learning models for both classification and regression tasks
 ```
 
-## Step 2: Importing the data
+## Importing the data
 ```R
 # Load the dataset
 data <- read.csv("D:\\R Projects\\cervical-cancer_csv.csv")
 ```
 
-## Data Exploration & Data Pre-Processing
+## Data Pre-Processing & Exploratory Data Analysis
 > Data Summary Check
 ```R
 # Check the structure of the data
@@ -273,21 +289,21 @@ Key Observations from the Correlation Heatmap: -
 
 1. Strong Positive Correlations: (Strong red colour)
 
-- STDs.number and IUD.years: Using an IUD might be associated with a higher risk of STDs.
-- IUD.years and Hormonal.Contraceptives.years: There might be a tendency to use both methods.
-- Smokes.packs.year and Smokes.years: The more years of smoking, the more packs smoked per year.
+- ```STDs.number``` and ```IUD.years```: Using an IUD might be associated with a higher risk of STDs.
+- ```IUD.years``` and ```Hormonal.Contraceptives.years```: There might be a tendency to use both methods.
+- ```Smokes.packs.year``` and ```Smokes.years```: The more years of smoking, the more packs smoked per year.
 
 2. Moderate Positive Correlations: (Lighter red Colour)
 
-- STDs.number and Hormonal.Contraceptives.years: Hormonal contraceptives might be linked to a slightly higher risk of STDs.
+- ```STDs.number``` and``` Hormonal.Contraceptives.years```: Hormonal contraceptives might be linked to a slightly higher risk of STDs.
 
 3. Strong Negative Correlations: (Blue Colour)
 
-- First.sexual.intercourse and Num.of.pregnancies: Earlier sexual debut might be associated with more pregnancies.
+- ```First.sexual.intercourse``` and ```Num.of.pregnancies```: Earlier sexual debut might be associated with more pregnancies.
 
 4. No Significant Correlations: (White Colour)
 
-- Age and other variables: Age doesn't seem to have a strong relationship with other variables.
+-```Age``` and other variables: Age doesn't seem to have a strong relationship with other variables.
 
 > Annova test
 ```R
@@ -311,12 +327,12 @@ for (num_var in numerical_df) {
 ```
 The ANOVA test results indicate significant associations between various health and lifestyle variables and demographic factors such as age and smoking habits, highlighting the following key findings:
 
-- Age: Strongly significant associations with IUD usage (p < 0.001), cancer diagnosis (p = 0.0017), HPV diagnosis (p = 0.0039), and Schiller Test results (p = 0.0034) suggest that age influences these health-related outcomes.
-- Number of Sexual Partners: A significant correlation with smoking status (p < 0.001) implies that smoking behavior may relate to an individual's sexual history.
-- First Sexual Intercourse Age: Smoking (p = 0.0002) and certain STDs (syphilis: p = 0.0045; vaginal condylomatosis: p = 0.033) are significantly associated with the age at which individuals first engage in sexual activity.
-- Number of Pregnancies: Significant relationships are observed with IUD usage (p < 0.001), hormonal contraceptives (p = 0.0027), and STDs (syphilis: p = 0.00003), indicating these factors may affect pregnancy frequency.
-- Smoking History: Both smoking duration (years) and intensity (packs/year) show a strong association with smoking status (p < 0.001), along with significant correlations with certain STDs (HIV: p = 0.0095; Hepatitis B: p = 0.0042) and Schiller Test results (p = 0.0064).
-- Biopsy Results: In contrast, the ANOVA results indicate that none of the analyzed demographic and health factors exhibit statistically significant correlations with biopsy results, as all p-values exceed the conventional significance threshold of 0.05. The only borderline case is the association between smoking years and biopsy (p = 0.0759), which suggests a potential trend but does not meet the criteria for statistical significance. Therefore, overall, the analysis underscores significant correlations between age, sexual behavior, and smoking with various health variables, suggesting behavioral and demographic influences on health conditions. However, the lack of significant correlations with biopsy results indicates that further research is needed to explore these relationships more deeply, particularly regarding smoking history.
+- ```Age```: Strongly significant associations with ```IUD usage``` (p < 0.001), ```cancer diagnosis``` (p = 0.0017), ```HPV diagnosis``` (p = 0.0039), and ```Schiller``` Test results (p = 0.0034) suggest that age influences these health-related outcomes.
+- ```Number of Sexual Partners```: A significant correlation with smoking status (p < 0.001) implies that smoking behavior may relate to an individual's sexual history.
+- ```First Sexual Intercourse Age```: ```Smoking``` (p = 0.0002) and certain ```STDs (syphilis```: p = 0.0045; ```vaginal condylomatosis```: p = 0.033) are significantly associated with the age at which individuals first engage in sexual activity.
+- ```Number of Pregnancies```: Significant relationships are observed with ```IUD usage``` (p < 0.001), ```hormonal contraceptives``` (p = 0.0027), and ```STDs (syphilis```: p = 0.00003), indicating these factors may affect pregnancy frequency.
+- ```Smoking History```: Both smoking duration (years) and intensity (packs/year) show a strong association with smoking status (p < 0.001), along with significant correlations with certain ```STDs (HIV```: p = 0.0095; ```Hepatitis``` B: p = 0.0042) and ```Schiller``` Test results (p = 0.0064).
+-```Biopsy``` Results: In contrast, the ANOVA results indicate that none of the analyzed demographic and health factors exhibit statistically significant correlations with biopsy results, as all p-values exceed the conventional significance threshold of 0.05. The only borderline case is the association between smoking years and biopsy (p = 0.0759), which suggests a potential trend but does not meet the criteria for statistical significance. Therefore, overall, the analysis underscores significant correlations between ```age```, ```sexual behavior```, and ```smoking``` with various health variables, suggesting behavioral and demographic influences on health conditions. However, the lack of significant correlations with biopsy results indicates that further research is needed to explore these relationships more deeply, particularly regarding smoking history.
 
 ## Feature Engineering
 ```R
@@ -470,9 +486,9 @@ ggplot(top_features, aes(x = reorder(Feature, Importance), y = Importance)) +
 
 The graph shows the top 5 features that have the highest importance in a Random Forest model prediction:
 
-- Schiller and Hinselmann: These features have the highest importance, suggesting they are the strongest predictors of the outcome.
-- Age: Age also plays a significant role in the prediction.
-- Hormonal Contraceptives and First Sexual Intercourse: These features have lower importance compared to the top 3.
+- ```Schiller``` and ```Hinselmann```: These features have the highest importance, suggesting they are the strongest predictors of the outcome.
+- ```Age```: Age also plays a significant role in the prediction.
+- ```Hormonal Contraceptives``` and ```First Sexual Intercourse```: These features have lower importance compared to the top 3.
 Overall, the graph suggests that the Random Forest model relies heavily on the Schiller and Hinselmann features, along with age, to make accurate predictions.
 
 ## Decision Tree Model
@@ -544,8 +560,8 @@ ggplot(top_dt_features, aes(x = reorder(Feature, Importance), y = Importance)) +
 
 The graph shows the top 5 features that have the highest importance in a Decision Tree model for predicting biopsy result: 
 
-- Schiller and Hinselmann: These features have the highest importance, suggesting they are the strongest predictors of the biopsy result.
-- Hormonal Contraceptives, Cytology, and Smoking: These features have lower importance, indicating a lesser influence on the prediction.
+- ```Schiller and Hinselmann```: These features have the highest importance, suggesting they are the strongest predictors of the biopsy result.
+- ```Hormonal Contraceptives```, ```Cytology```, and ```Smoking```: These features have lower importance, indicating a lesser influence on the prediction.
 Overall, the graph suggests that the Decision Tree model primarily relies on the Schiller and Hinselmann features to make accurate predictions about biopsy results.
 
 ## Artificial Neural Network Model
@@ -643,10 +659,10 @@ ggplot(top_5_ann_features, aes(x = reorder(Feature, Importance), y = Importance)
 
 The graph shows the top 5 features that have the highest importance in an Artificial Neural Network (ANN) model in predicting the outcome variable:
 
-- Smokes: This feature has the highest importance, suggesting it is the strongest predictor of the outcome.
-- Smokes.packs.year: This feature is also highly important, indicating that the number of packs smoked per year is a significant factor.
-- STDs.condylomatosis and STDs.vulvo.perineal.condylomatosis: These features related to sexually transmitted diseases have moderate importance.
-- IUD.years: This feature has the lowest importance among the top 5.
+- ```Smokes```: This feature has the highest importance, suggesting it is the strongest predictor of the outcome.
+- ```Smokes.packs.year```: This feature is also highly important, indicating that the number of packs smoked per year is a significant factor.
+- ```STDs.condylomatosis``` and ```STDs.vulvo.perineal.condylomatosis```: These features related to sexually transmitted diseases have moderate importance.
+- ```IUD.years```: This feature has the lowest importance among the top 5.
 Overall, the graph suggests that the ANN model relies heavily on smoking-related features to make accurate predictions.
 
 
@@ -685,54 +701,23 @@ The graph compares the top 5 features that have the highest importance in three 
 
 Key Observations:
 
-- Schiller and STDs.number: These features are consistently among the top 5 important features across all three models.
-- Smokes and Smokes.packs.year: These features are also highly important in all models, indicating that smoking-related factors are strong predictors of the biopsy result.
-- Hinselmann and STDs.condylomatosis: These features are moderately important in all models.
-- Cytology, IUD.years, and First sexual.intercourse: These features have lower importance in all models.
+- ```Schiller, STDs.number```: These features are consistently among the top 5 important features across all three models.
+- ```Smokes, Smokes.packs.year```: These features are also highly important in all models, indicating that smoking-related factors are strong predictors of the biopsy result.
+- ```Hinselmann, STDs.condylomatosis```: These features are moderately important in all models.
+- ```Cytology, IUD.years, First sexual.intercourse```: These features have lower importance in all models.
 Overall, the graph suggests that all three models rely heavily on smoking-related features and the Schiller test to make accurate predictions about biopsy results. However, the ANN model seems to give more weight to STDs.number compared to the other two models (by visually comparing the height of the bars for "STDs.number" in the ANN model to the other models, we can see that it appears to be relatively higher. This suggests that the ANN model might be assigning more importance to this feature).
 
-## **Conclusion**
+Note: *Feature importance was not calculated for the K-Nearest Neighbors (KNN) model because KNN is a non-parametric algorithm that makes predictions based on the distance between data points rather than a learned model structure. Unlike models such as Random Forest or Decision Trees, KNN does not inherently provide a mechanism to assess the contribution of individual features to its predictions, making feature importance analysis impractical for this algorithm.*
 
-Based on the results and feature importance from the four models — K-Nearest Neighbors (KNN), Random Forest (RF), Decision Tree (DT), and Artificial Neural Network (ANN) — we can draw several conclusions about their comparative performance in predicting cervical cancer outcomes, specifically regarding biopsy results.
+## **Conclusion & Recommendations**
 
-**Performance Analysis:**
+Based on performance analysis of the models above, we come to concludion that the Random Forest (RF) model emerges as the best-performing model for cervical cancer prediction based on biopsy results. Its high accuracy (95.8%) and F1 score (97.8%) suggest robust performance across both classes, making it effective in identifying positive and negative biopsy cases. The feature importance analysis indicates that it leverages the most predictive features effectively, specifically Schiller and Hinselmann, which are likely clinically relevant. 
 
-> K-Nearest Neighbors (KNN):
+While the Decision Tree (DT) also performs comparably with a slightly lower accuracy and F1 score, its interpretability allows for clear understanding of decision pathways. The Artificial Neural Network (ANN) provides strong sensitivity in predicting positive cases, but its overall performance in terms of accuracy lags behind RF and DT. 
 
-Accuracy: 93.8%
-F1 Score: 96.8%
-Strengths: High precision in classifying negatives, as indicated by the high F1 score.
-Weaknesses: The model failed to identify any positive cases (0 true positives), leading to a lack of sensitivity in predicting positive biopsy results. This renders the KNN model ineffective for this clinical application.
+In contrast, the K-Nearest Neighbors (KNN) model, despite its high precision for negative cases, lacks the ability to identify positive cases, limiting its applicability in clinical decision-making where detecting positive biopsy results is crucial.
 
-> Random Forest (RF):
-
-Accuracy: 95.8%
-F1 Score: 97.8%
-True Positives: 6 cases correctly predicted as positive.
-Strengths: High accuracy and F1 score demonstrate the model's capability to balance precision and recall, effectively identifying both negative and positive cases.
-Feature Importance: The model relies heavily on the features Schiller and Hinselmann, which are significant predictors in determining biopsy results.
-
-> Decision Tree (DT):
-
-Accuracy: 95.78%
-F1 Score: 0.9776
-True Positives: 6 cases correctly identified as positive.
-Strengths: Comparable performance to RF in terms of accuracy and F1 score, indicating effective classification of both classes.
-Feature Importance: Like RF, the DT model emphasizes Schiller and Hinselmann as critical predictors, providing insights into the most influential factors in the decision-making process.
-
-> Artificial Neural Network (ANN):
-
-Accuracy: 93.98%
-F1 Score: 0.9689
-True Positives: 36 cases correctly predicted as positive.
-Strengths: High true positive count showcases the ANN model's superior sensitivity in identifying positive cases compared to KNN, albeit with slightly lower accuracy than RF and DT.
-Feature Importance: The model emphasizes smoking-related features, which indicates a different focus compared to RF and DT.
-
-> Comparative Conclusion:
-
-The Random Forest (RF) model emerges as the best-performing model for cervical cancer prediction based on biopsy results. Its high accuracy (95.8%) and F1 score (97.8%) suggest robust performance across both classes, making it effective in identifying positive and negative biopsy cases. The feature importance analysis indicates that it leverages the most predictive features effectively, specifically Schiller and Hinselmann, which are likely clinically relevant. While the Decision Tree (DT) also performs comparably with a slightly lower accuracy and F1 score, its interpretability allows for clear understanding of decision pathways. The Artificial Neural Network (ANN) provides strong sensitivity in predicting positive cases, but its overall performance in terms of accuracy lags behind RF and DT. In contrast, the K-Nearest Neighbors (KNN) model, despite its high precision for negative cases, lacks the ability to identify positive cases, limiting its applicability in clinical decision-making where detecting positive biopsy results is crucial.
-
-Thus, RF is recommended for this application due to its balance of accuracy, sensitivity, and feature importance insights, making it a reliable choice for predicting cervical cancer biopsy results.
+Based on the performance analysis, it is recommended to utilize the Random Forest (RF) model for predicting cervical cancer biopsy results. Its high accuracy and F1 score indicate a strong capability to effectively identify both positive and negative cases, making it a reliable tool for clinical decision-making. Additionally, its emphasis on key predictive features such as Schiller and Hinselmann provides valuable insights that can enhance diagnostic processes. Incorporating the RF model into clinical practice could improve early detection and treatment outcomes for cervical cancer.
 
 **Author**: Debolina Dutta
 
