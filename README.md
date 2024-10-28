@@ -176,11 +176,12 @@ ggplot(cancer_data, aes(x = as.factor(Biopsy), y = Age, fill = as.factor(Biopsy)
 ```
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------------------------------------
-## Correlation Matrix and Anova Test
+**Correlation Matrix and Anova Test**
+
+## Correlation Matrix Calculation
 ```R
 ## Calculate the correlation matrix for numerical columns
 correlation_matrix <- cor(cancer_data[, numerical_df], use = "complete.obs")
-
 
 # Reshape the correlation matrix into long format
 correlation_melted <- melt(correlation_matrix)
@@ -193,8 +194,29 @@ ggplot(correlation_melted, aes(Var1, Var2, fill = value)) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
   labs(title = "Correlation Matrix Heatmap", x = "Variables", y = "Variables")
+```
+> Key Observations from the Correlation Heatmap: -
+
+1. Strong Positive Correlations: (Strong red colour)
+
+- STDs.number and IUD.years: Using an IUD might be associated with a higher risk of STDs.
+- IUD.years and Hormonal.Contraceptives.years: There might be a tendency to use both methods.
+- Smokes.packs.year and Smokes.years: The more years of smoking, the more packs smoked per year.
+
+2. Moderate Positive Correlations: (Lighter red Colour)
+
+- STDs.number and Hormonal.Contraceptives.years: Hormonal contraceptives might be linked to a slightly higher risk of STDs.
+
+3. Strong Negative Correlations: (Blue Colour)
+
+- First.sexual.intercourse and Num.of.pregnancies: Earlier sexual debut might be associated with more pregnancies.
+
+4. No Significant Correlations: (White Colour)
+
+- Age and other variables: Age doesn't seem to have a strong relationship with other variables.
 
 ## Annova test
+```R
 # Loop through each numerical feature
 for (num_var in numerical_df) {
   # Loop through each categorical feature
@@ -213,6 +235,23 @@ for (num_var in numerical_df) {
   }
 }
 ```
+> The ANOVA test results indicate significant associations between various health and lifestyle variables and demographic factors such as age and smoking habits, highlighting the following key findings:
+
+Age: Strongly significant associations with IUD usage (p < 0.001), cancer diagnosis (p = 0.0017), HPV diagnosis (p = 0.0039), and Schiller Test results (p = 0.0034) suggest that age influences these health-related outcomes.
+
+Number of Sexual Partners: A significant correlation with smoking status (p < 0.001) implies that smoking behavior may relate to an individual's sexual history.
+
+First Sexual Intercourse Age: Smoking (p = 0.0002) and certain STDs (syphilis: p = 0.0045; vaginal condylomatosis: p = 0.033) are significantly associated with the age at which individuals first engage in sexual activity.
+
+Number of Pregnancies: Significant relationships are observed with IUD usage (p < 0.001), hormonal contraceptives (p = 0.0027), and STDs (syphilis: p = 0.00003), indicating these factors may affect pregnancy frequency.
+
+Smoking History: Both smoking duration (years) and intensity (packs/year) show a strong association with smoking status (p < 0.001), along with significant correlations with certain STDs (HIV: p = 0.0095; Hepatitis B: p = 0.0042) and Schiller Test results (p = 0.0064).
+
+Biopsy Results:
+
+In contrast, the ANOVA results indicate that none of the analyzed demographic and health factors exhibit statistically significant correlations with biopsy results, as all p-values exceed the conventional significance threshold of 0.05. The only borderline case is the association between smoking years and biopsy (p = 0.0759), which suggests a potential trend but does not meet the criteria for statistical significance.
+
+Therefore, overall, the analysis underscores significant correlations between age, sexual behavior, and smoking with various health variables, suggesting behavioral and demographic influences on health conditions. However, the lack of significant correlations with biopsy results indicates that further research is needed to explore these relationships more deeply, particularly regarding smoking history.
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Feature Engineering
@@ -502,7 +541,7 @@ ggplot(combined_importance, aes(x = reorder(Feature, Importance), y = Importance
        y = "Importance") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  scale_fill_brewer(palette = "Set1")  # Optional: change color palette
+  scale_fill_brewer(palette = "Set1")  
 ```
 
 
