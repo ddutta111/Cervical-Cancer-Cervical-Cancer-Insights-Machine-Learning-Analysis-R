@@ -22,7 +22,7 @@ Cervical cancer remains one of the leading causes of cancer-related deaths among
 
 ## Dataset Description
 
-The dataset for this project has been sourced from ```Kaggle``` and contains various variables that contribute to the risk assessment of cervical cancer. Key variables include:
+The dataset ```cervical_cancer_csv``` for this project has been sourced from ```Kaggle``` and contains various variables that contribute to the risk assessment of cervical cancer. Key variables include:
 
 ```Age```: The age of the individual.
 
