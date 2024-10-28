@@ -354,7 +354,9 @@ X_test <- cancer_data[-train_index, -which(names(cancer_data) == "Biopsy")]
 y_test <- cancer_data$Biopsy[-train_index]
 ```
 
-## Models:
+## Models Selection: 
+
+We selected the K-Nearest Neighbors (KNN), Random Forest (RF), Decision Tree, and Artificial Neural Network (ANN) models for the analysis and prediction of biopsy results in cervical cancer data due to their diverse strengths and suitability for handling categorical variables. KNN is effective for its simplicity and ability to capture local patterns, making it useful for classification tasks in high-dimensional spaces. The Random Forest model, an ensemble learning method, excels in reducing overfitting and enhancing predictive accuracy by aggregating multiple decision trees, making it robust for varied data characteristics. Decision Trees provide interpretability, allowing us to visualize decision-making processes and understand variable importance in classification. Lastly, the ANN model leverages complex relationships in the data through multiple layers, making it well-suited for capturing intricate patterns that may exist in the dataset. 
 
 ## KNN Model
 ```R
@@ -506,7 +508,7 @@ ggplot(data = conf_matrix_df, aes(x = Actual, y = Predicted)) +
 ```
 ![Decision Tree confusion matrix](https://github.com/user-attachments/assets/b7e8fb1d-73a1-4e59-938c-cef3d1a36665)
 
-The confusion matrix provides a summary of the model's predictions compared to the actual outcomes:
+The confusion matrix of DT model provides a summary of the model's predictions compared to the actual outcomes:
 
 - True Positives (TP): 6 (Correctly predicted positive cases)
 - True Negatives (TN): 153 (Correctly predicted negative cases)
@@ -688,6 +690,49 @@ Key Observations:
 - Hinselmann and STDs.condylomatosis: These features are moderately important in all models.
 - Cytology, IUD.years, and First sexual.intercourse: These features have lower importance in all models.
 Overall, the graph suggests that all three models rely heavily on smoking-related features and the Schiller test to make accurate predictions about biopsy results. However, the ANN model seems to give more weight to STDs.number compared to the other two models (by visually comparing the height of the bars for "STDs.number" in the ANN model to the other models, we can see that it appears to be relatively higher. This suggests that the ANN model might be assigning more importance to this feature).
+
+## **Conclusion**
+
+Based on the results and feature importance from the four models — K-Nearest Neighbors (KNN), Random Forest (RF), Decision Tree (DT), and Artificial Neural Network (ANN) — we can draw several conclusions about their comparative performance in predicting cervical cancer outcomes, specifically regarding biopsy results.
+
+**Performance Analysis:**
+
+> K-Nearest Neighbors (KNN):
+
+Accuracy: 93.8%
+F1 Score: 96.8%
+Strengths: High precision in classifying negatives, as indicated by the high F1 score.
+Weaknesses: The model failed to identify any positive cases (0 true positives), leading to a lack of sensitivity in predicting positive biopsy results. This renders the KNN model ineffective for this clinical application.
+
+> Random Forest (RF):
+
+Accuracy: 95.8%
+F1 Score: 97.8%
+True Positives: 6 cases correctly predicted as positive.
+Strengths: High accuracy and F1 score demonstrate the model's capability to balance precision and recall, effectively identifying both negative and positive cases.
+Feature Importance: The model relies heavily on the features Schiller and Hinselmann, which are significant predictors in determining biopsy results.
+
+> Decision Tree (DT):
+
+Accuracy: 95.78%
+F1 Score: 0.9776
+True Positives: 6 cases correctly identified as positive.
+Strengths: Comparable performance to RF in terms of accuracy and F1 score, indicating effective classification of both classes.
+Feature Importance: Like RF, the DT model emphasizes Schiller and Hinselmann as critical predictors, providing insights into the most influential factors in the decision-making process.
+
+> Artificial Neural Network (ANN):
+
+Accuracy: 93.98%
+F1 Score: 0.9689
+True Positives: 36 cases correctly predicted as positive.
+Strengths: High true positive count showcases the ANN model's superior sensitivity in identifying positive cases compared to KNN, albeit with slightly lower accuracy than RF and DT.
+Feature Importance: The model emphasizes smoking-related features, which indicates a different focus compared to RF and DT.
+
+> Comparative Conclusion:
+
+The Random Forest (RF) model emerges as the best-performing model for cervical cancer prediction based on biopsy results. Its high accuracy (95.8%) and F1 score (97.8%) suggest robust performance across both classes, making it effective in identifying positive and negative biopsy cases. The feature importance analysis indicates that it leverages the most predictive features effectively, specifically Schiller and Hinselmann, which are likely clinically relevant. While the Decision Tree (DT) also performs comparably with a slightly lower accuracy and F1 score, its interpretability allows for clear understanding of decision pathways. The Artificial Neural Network (ANN) provides strong sensitivity in predicting positive cases, but its overall performance in terms of accuracy lags behind RF and DT. In contrast, the K-Nearest Neighbors (KNN) model, despite its high precision for negative cases, lacks the ability to identify positive cases, limiting its applicability in clinical decision-making where detecting positive biopsy results is crucial.
+
+Thus, RF is recommended for this application due to its balance of accuracy, sensitivity, and feature importance insights, making it a reliable choice for predicting cervical cancer biopsy results.
 
 **Author**: Debolina Dutta
 
