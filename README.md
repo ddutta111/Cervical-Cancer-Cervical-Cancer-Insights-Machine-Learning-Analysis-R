@@ -215,7 +215,7 @@ ggplot(correlation_melted, aes(Var1, Var2, fill = value)) +
 
 - Age and other variables: Age doesn't seem to have a strong relationship with other variables.
 
-## Annova test
+> Annova test
 ```R
 # Loop through each numerical feature
 for (num_var in numerical_df) {
