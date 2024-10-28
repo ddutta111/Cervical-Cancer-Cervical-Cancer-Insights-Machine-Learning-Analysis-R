@@ -370,6 +370,8 @@ ggplot(data = conf_matrix_df, aes(x = Actual, y = Predicted)) +
   theme_minimal() +
   labs(title = "KNN Confusion Matrix", x = "Actual Labels", y = "Predicted Labels")
 ```
+![KNN confusion matrix](https://github.com/user-attachments/assets/809dee21-de61-448e-bce4-8a4fce24f2e2)
+
 The confusion matrix shows the performance of the K-Nearest Neighbors (KNN) model in predicting biopsy results:
 
 - True Negatives (TN): 156 cases were correctly predicted as negative (0).
@@ -410,7 +412,19 @@ ggplot(data = conf_matrix_df, aes(x = Actual, y = Predicted)) +
   geom_text(aes(label = Freq), vjust = 1) +
   theme_minimal() +
   labs(title = "Random Forest Confusion Matrix", x = "Actual Labels", y = "Predicted Labels")
+```
+![Random Forest confusion matrix](https://github.com/user-attachments/assets/7dce5ba7-0bae-49a8-8673-79666e00c8a5)
 
+The Random Forest confusion matrix shows:
+
+- True Negatives: 153 (correctly predicted negatives)
+- False Positives: 4 (incorrectly predicted negatives)
+- False Negatives: 3 (incorrectly predicted positives)
+- True Positives: 6 (correctly predicted positives)
+- Accuracy (95.8%) indicates that most predictions are correct, and F1 Score (97.8%) shows strong balance between precision and recall, particularly in identifying positives effectively.
+
+> Feature Importance RF Model
+```R
 # Get feature importance
 rf_importance <- importance(rf_model)
 
@@ -432,8 +446,15 @@ ggplot(top_features, aes(x = reorder(Feature, Importance), y = Importance)) +
        y = "Importance") +
   theme_minimal()
 ```
-----------------------------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------------------------
+![RF feature importance](https://github.com/user-attachments/assets/dcc4b0c1-ef52-4db4-a68b-2863da96db4f)
+
+The graph shows the top 5 features that have the highest importance in a Random Forest model prediction:
+
+- Schiller and Hinselmann: These features have the highest importance, suggesting they are the strongest predictors of the outcome.
+- Age: Age also plays a significant role in the prediction.
+- Hormonal Contraceptives and First Sexual Intercourse: These features have lower importance compared to the top 3.
+Overall, the graph suggests that the Random Forest model relies heavily on the Schiller and Hinselmann features, along with age, to make accurate predictions.
+
 ## Decision Tree Model
 ```R
 # Train the Decision Tree model
@@ -464,7 +485,20 @@ ggplot(data = conf_matrix_df, aes(x = Actual, y = Predicted)) +
   geom_text(aes(label = Freq), vjust = 1) +
   theme_minimal() +
   labs(title = "Decision tree Confusion Matrix", x = "Actual Labels", y = "Predicted Labels")
+```
+![Decision Tree confusion matrix](https://github.com/user-attachments/assets/b7e8fb1d-73a1-4e59-938c-cef3d1a36665)
 
+The confusion matrix provides a summary of the model's predictions compared to the actual outcomes:
+
+- True Positives (TP): 6 (Correctly predicted positive cases)
+- True Negatives (TN): 153 (Correctly predicted negative cases)
+- False Positives (FP): 4 (Incorrectly predicted as positive)
+- False Negatives (FN): 3 (Incorrectly predicted as negative)
+- Accuracy: 95.78% of the predictions were correct, indicating strong overall performance.
+- F1 Score: 0.9776 shows excellent precision and recall balance, highlighting the model's effectiveness in identifying positive biopsy cases while minimizing false positives and negatives.
+
+> Feature Importance Decision Tree Model
+```R
 # Get feature importance
 dt_importance <- dt_model$variable.importance
 
@@ -486,8 +520,13 @@ ggplot(top_dt_features, aes(x = reorder(Feature, Importance), y = Importance)) +
        y = "Importance") +
   theme_minimal()
 ```
---------------------------------------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------------------------------------
+![DT model Feature Importance](https://github.com/user-attachments/assets/c293ed12-d48b-464c-a885-4b5845206758)
+
+The graph shows the top 5 features that have the highest importance in a Decision Tree model for predicting biopsy result: 
+
+- Schiller and Hinselmann: These features have the highest importance, suggesting they are the strongest predictors of the biopsy result.
+- Hormonal Contraceptives, Cytology, and Smoking: These features have lower importance, indicating a lesser influence on the prediction.
+Overall, the graph suggests that the Decision Tree model primarily relies on the Schiller and Hinselmann features to make accurate predictions about biopsy results.
 
 ## Artificial Neural Network Model
 ```R
@@ -535,7 +574,22 @@ ggplot(data = conf_matrix_df, aes(x = Actual, y = Predicted)) +
   scale_x_discrete(limits = c("0", "1")) +
   scale_y_discrete(limits = c("0", "1")) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
 
+![ANN Confusion Matrix](https://github.com/user-attachments/assets/13035d17-7df2-407b-b141-20ba3b525d92)
+
+The confusion matrix summarizes the model's predictions against the actual outcomes:
+
+- True Positives (TP): The model correctly predicted 36 positive cases.
+- True Negatives (TN): The model correctly predicted 156 negative cases.
+- False Positives (FP): The model incorrectly predicted 5 negative cases as positive.
+- False Negatives (FN): The model incorrectly predicted 10 positive cases as negative.
+- Accuracy (0.939759): This indicates that the model correctly predicted 93.97% of the cases.
+- F1 Score (0.9689441): This is a measure of the model's precision and recall. A high F1 score suggests that the model has a good balance between precision and recall.
+Overall, the ANN model shows strong performance in predicting biopsy results, with high accuracy and F1 score. 
+
+> Feature importance ANN Model
+```R
 # Function to get feature importance from the ANN model
 get_ann_importance <- function(model, data) {
   # Extract weights from the first layer
@@ -565,8 +619,17 @@ ggplot(top_5_ann_features, aes(x = reorder(Feature, Importance), y = Importance)
        y = "Importance") +
   theme_minimal()
 ```
-------------------------------------------------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+![ANN feature importance](https://github.com/user-attachments/assets/308bae9b-b36b-4dc3-baa8-db10ebc1217e)
+
+The graph shows the top 5 features that have the highest importance in an Artificial Neural Network (ANN) model in predicting the outcome variable:
+
+- Smokes: This feature has the highest importance, suggesting it is the strongest predictor of the outcome.
+- Smokes.packs.year: This feature is also highly important, indicating that the number of packs smoked per year is a significant factor.
+- STDs.condylomatosis and STDs.vulvo.perineal.condylomatosis: These features related to sexually transmitted diseases have moderate importance.
+- IUD.years: This feature has the lowest importance among the top 5.
+Overall, the graph suggests that the ANN model relies heavily on smoking-related features to make accurate predictions.
+
+
 ## Feature Importance Comparison of Random Forest, Decision Tree and ANN Model
 ```R
 # Comparison of top features data frames from 5 models
@@ -596,7 +659,17 @@ ggplot(combined_importance, aes(x = reorder(Feature, Importance), y = Importance
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_fill_brewer(palette = "Set1")  
 ```
+![Top features Comparison](https://github.com/user-attachments/assets/0e85b7b4-d04c-427b-9656-4acb41b43c10)
 
+The graph compares the top 5 features that have the highest importance in three different models: Artificial Neural Network (ANN), Decision Tree, and Random Forest. This means these features are the most useful in predicting the biopsy result.
+
+Key Observations:
+
+- Schiller and STDs.number: These features are consistently among the top 5 important features across all three models.
+- Smokes and Smokes.packs.year: These features are also highly important in all models, indicating that smoking-related factors are strong predictors of the biopsy result.
+- Hinselmann and STDs.condylomatosis: These features are moderately important in all models.
+- Cytology, IUD.years, and First sexual.intercourse: These features have lower importance in all models.
+Overall, the graph suggests that all three models rely heavily on smoking-related features and the Schiller test to make accurate predictions about biopsy results. However, the ANN model seems to give more weight to STDs.number compared to the other two models (by visually comparing the height of the bars for "STDs.number" in the ANN model to the other models, we can see that it appears to be relatively higher. This suggests that the ANN model might be assigning more importance to this feature).
 
 **Author**: Debolina Dutta
 
