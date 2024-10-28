@@ -80,7 +80,7 @@ missing_perc <- colSums(is.na(data)) / nrow(data)
 # Print the percenatge of missisng values
 print(missing_perc)
 ```
-- The dataset comprises 835 observations and 36 variables, with varying degrees of missing values. Notable missing counts include Num.of.pregnancies (56), IUD (112), and a significant STDs..Time.since.first.diagnosis (764). The percentage of missing values ranges from 0.84% for First.sexual.intercourse to 91.50% for STDs..Time.since.first.diagnosis, indicating considerable data loss in several columns. This missing data must be addressed before further analysis or modeling can proceed.
+> The dataset comprises 835 observations and 36 variables, with varying degrees of missing values. Notable missing counts include Num.of.pregnancies (56), IUD (112), and a significant STDs..Time.since.first.diagnosis (764). The percentage of missing values ranges from 0.84% for First.sexual.intercourse to 91.50% for STDs..Time.since.first.diagnosis, indicating considerable data loss in several columns. This missing data must be addressed before further analysis or modeling can proceed.
 
 > Identifying numerical and Categorical features
 ```R
@@ -145,6 +145,7 @@ ggplot(biopsy_df, aes(x = Var1, y = Freq, fill = Var1)) +
 This summary highlights key characteristics and patterns within the biopsy-positive group, which could be relevant to biopsy outcomes.
 
 ![Biopsy plot](https://github.com/user-attachments/assets/d0740956-08e1-47e0-8c05-987ebfbf395b)
+
 The graph shows the distribution of biopsy results. It appears that the majority of the biopsies (around 800) were negative (class label 0), while only a small number (around 50) were positive (class label 1). This suggests that the majority of the patients in this study did not have the condition being tested for.
 
 > Visual analysis of effects of Smokes acc. to Biopsy results
@@ -159,6 +160,7 @@ ggplot(cancer_data, aes(x = as.factor(Smokes), fill = as.factor(Biopsy))) +
   theme_minimal()
 ```
 ![Smoke vs  Biopsy Distribution](https://github.com/user-attachments/assets/bc921c41-1269-4db4-a816-fd279a615ea2)
+
 This bar chart shows the distribution of smoking status among individuals with positive and negative biopsy results.
 
 Non-smoking: The majority of individuals with negative biopsy results are non-smokers (high red bar), while a smaller portion with positive biopsy results also falls in this group (small blue bar).
@@ -179,13 +181,13 @@ ggplot(cancer_data, aes(x = as.factor(Biopsy), y = `Num.of.pregnancies`, fill = 
   theme(legend.position = "top")  # Optional: Move the legend to the top for better visibility
 ```
 > ![Number of preg vs Biopsy](https://github.com/user-attachments/assets/95a63b98-d12a-4897-a43c-06a84455879a)
+
 The graph shows how the number of pregnancies is distributed among patients who had negative and positive biopsy results:
 
 - Median: The median number of pregnancies is slightly higher for patients with positive biopsy results compared to those with negative results.
 - Range: There is a wider range of pregnancies among patients with negative biopsy results, indicating more variability.
 - Outliers: There are a few outliers with a high number of pregnancies in both groups.
 Overall, the graph suggests that there might be a slight association between a higher number of pregnancies and a positive biopsy result. It's not clear, so we need further advance techniques o analyse it.
-> Visual analysis of Hormonal contraceptives effect acc. to bopsy Result
 
 > Visual Exploration of Hormonal Contraceptives According to Biopsy Results
 ```R
@@ -200,6 +202,7 @@ ggplot(cancer_data, aes(x = as.factor(Hormonal.Contraceptives), fill = as.factor
   theme_minimal()
 ```
 ![Hormonal Contraceptive vs Biopsy](https://github.com/user-attachments/assets/690650e7-3c60-48ec-a706-2374bf401cd6)
+
 The graph shows how the use of hormonal contraceptives is distributed among patients who had negative and positive biopsy results:
 
 - Non-Users: The majority of patients in both groups are non-users of hormonal contraceptives.
@@ -248,7 +251,7 @@ ggplot(correlation_melted, aes(Var1, Var2, fill = value)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
   labs(title = "Correlation Matrix Heatmap", x = "Variables", y = "Variables")
 ```
-- Key Observations from the Correlation Heatmap: -
+> Key Observations from the Correlation Heatmap: -
 
 1. Strong Positive Correlations: (Strong red colour)
 
@@ -288,23 +291,16 @@ for (num_var in numerical_df) {
   }
 }
 ```
-- The ANOVA test results indicate significant associations between various health and lifestyle variables and demographic factors such as age and smoking habits, highlighting the following key findings:
+> The ANOVA test results indicate significant associations between various health and lifestyle variables and demographic factors such as age and smoking habits, highlighting the following key findings:
 
-| Age: Strongly significant associations with IUD usage (p < 0.001), cancer diagnosis (p = 0.0017), HPV diagnosis (p = 0.0039), and Schiller Test results (p = 0.0034) suggest that age influences these health-related outcomes.
+- Age: Strongly significant associations with IUD usage (p < 0.001), cancer diagnosis (p = 0.0017), HPV diagnosis (p = 0.0039), and Schiller Test results (p = 0.0034) suggest that age influences these health-related outcomes.
+-  Number of Sexual Partners: A significant correlation with smoking status (p < 0.001) implies that smoking behavior may relate to an individual's sexual history.
+- First Sexual Intercourse Age: Smoking (p = 0.0002) and certain STDs (syphilis: p = 0.0045; vaginal condylomatosis: p = 0.033) are significantly associated with the age at which individuals first engage in sexual activity.
+- Number of Pregnancies: Significant relationships are observed with IUD usage (p < 0.001), hormonal contraceptives (p = 0.0027), and STDs (syphilis: p = 0.00003), indicating these factors may affect pregnancy frequency.
+- Smoking History: Both smoking duration (years) and intensity (packs/year) show a strong association with smoking status (p < 0.001), along with significant correlations with certain STDs (HIV: p = 0.0095; Hepatitis B: p = 0.0042) and Schiller Test results (p = 0.0064).
+- Biopsy Results:
 
-| Number of Sexual Partners: A significant correlation with smoking status (p < 0.001) implies that smoking behavior may relate to an individual's sexual history.
-
-| First Sexual Intercourse Age: Smoking (p = 0.0002) and certain STDs (syphilis: p = 0.0045; vaginal condylomatosis: p = 0.033) are significantly associated with the age at which individuals first engage in sexual activity.
-
-| Number of Pregnancies: Significant relationships are observed with IUD usage (p < 0.001), hormonal contraceptives (p = 0.0027), and STDs (syphilis: p = 0.00003), indicating these factors may affect pregnancy frequency.
-
-| Smoking History: Both smoking duration (years) and intensity (packs/year) show a strong association with smoking status (p < 0.001), along with significant correlations with certain STDs (HIV: p = 0.0095; Hepatitis B: p = 0.0042) and Schiller Test results (p = 0.0064).
-
-| Biopsy Results:
-
-In contrast, the ANOVA results indicate that none of the analyzed demographic and health factors exhibit statistically significant correlations with biopsy results, as all p-values exceed the conventional significance threshold of 0.05. The only borderline case is the association between smoking years and biopsy (p = 0.0759), which suggests a potential trend but does not meet the criteria for statistical significance.
-
-Therefore, overall, the analysis underscores significant correlations between age, sexual behavior, and smoking with various health variables, suggesting behavioral and demographic influences on health conditions. However, the lack of significant correlations with biopsy results indicates that further research is needed to explore these relationships more deeply, particularly regarding smoking history.
+In contrast, the ANOVA results indicate that none of the analyzed demographic and health factors exhibit statistically significant correlations with biopsy results, as all p-values exceed the conventional significance threshold of 0.05. The only borderline case is the association between smoking years and biopsy (p = 0.0759), which suggests a potential trend but does not meet the criteria for statistical significance. Therefore, overall, the analysis underscores significant correlations between age, sexual behavior, and smoking with various health variables, suggesting behavioral and demographic influences on health conditions. However, the lack of significant correlations with biopsy results indicates that further research is needed to explore these relationships more deeply, particularly regarding smoking history.
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Feature Engineering
