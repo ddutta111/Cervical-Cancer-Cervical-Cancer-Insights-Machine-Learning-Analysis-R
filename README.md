@@ -49,6 +49,8 @@ library(rpart.plot)     # For visualizing Decision Trees
 library(class)          # For K-Nearest Neighbors (KNN) algorithm
 library(MLmetrics)      # For calculating various model performance metrics
 library(GGally)         # For extended functions on ggplot2, including pair plots
+library(Amelia)         # For handling missing data through multiple imputation techniques, allowing for robust statistical analysis
+library(MLmetrics)      # For evaluating the performance of machine learning models for both classification and regression tasks
 ```
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -60,7 +62,7 @@ data <- read.csv("D:\\R Projects\\cervical-cancer_csv.csv")
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-## Step 3: Data Exploration
+## Data Exploration & Data Pre-Processing
 ```R
 # Check the structure of the data
 str(data)
@@ -68,31 +70,51 @@ str(data)
 # View the first few rows
 head(data)
 
-# Check for missing values
+# Check missing values
 colSums(is.na(data))
 
-# Calculate percentage of missing values for each column
+#Calculate percentage of missing values for each column
 missing_perc <- colSums(is.na(data)) / nrow(data)
 
-# Print the percentage of missing values
+# Print the percenatge of missisng values
 print(missing_perc)
 
-## Step 4: Data Cleaning
-# Drop columns with more than 90% missing values
+# Separate numerical and categorical columns as per given lists
+numerical_df <- c('Age', 'Number.of.sexual.partners', 'First.sexual.intercourse', 'Num.of.pregnancies', 'Smokes..years.', 
+                  'Smokes..packs.year.', 'Hormonal.Contraceptives..years.', 'IUD..years.', 'STDs..number.')
+
+categorical_df <- c('Smokes', 'Hormonal.Contraceptives', 'IUD', 'STDs', 'STDs.condylomatosis', 'STDs.cervical.condylomatosis',
+                    'STDs.vaginal.condylomatosis', 'STDs.vulvo.perineal.condylomatosis', 'STDs.syphilis', 
+                    'STDs.pelvic.inflammatory.disease', 'STDs.genital.herpes', 'STDs.molluscum.contagiosum', 
+                    'STDs.AIDS', 'STDs.HIV', 'STDs.Hepatitis.B', 'STDs.HPV', 'STDs..Number.of.diagnosis', 
+                    'Dx.Cancer', 'Dx.CIN', 'Dx.HPV', 'Dx', 'Hinselmann', 'Schiller', 'Citology', 'Biopsy')
+
+
+# Drop columns with >90% missing values
 data_cleaned <- data %>%
   select(where(~ sum(is.na(.)) / nrow(data) <= 0.90))
+# Define Mode function for categorical variables
+Mode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
 
-# Impute missing values with the mean for remaining columns
+# Impute missing values: mean for all numerical, and  mode for categorical
 cancer_data <- data_cleaned %>%
-  mutate(across(everything(), ~ ifelse(is.na(.), mean(., na.rm = TRUE), .)))
+  mutate(across(all_of(numerical_df), ~ ifelse(is.na(.), mean(., na.rm = TRUE), .))) %>%
+  mutate(across(all_of(categorical_df), ~ ifelse(is.na(.), Mode(.), .)))
 
 # Check the cleaned and imputed dataset
 print(summary(cancer_data))
 ```
 -----------------------------------------------------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------------------------------------------------
+## Visually Data Exploration
 ```R
-# Step 5: Visually Data Exploration
+# Convert categorical columns to factors
+cancer_data <- cancer_data %>%
+  mutate(across(all_of(categorical_df), as.factor))
+
 # Separating groups with positive and negative biopsy results
 biopsy_positive <- cancer_data %>% filter(Biopsy == 1)
 biopsy_negative <- cancer_data %>% filter(Biopsy == 0)
@@ -110,244 +132,186 @@ ggplot(biopsy_df, aes(x = Var1, y = Freq, fill = Var1)) +
   labs(title = "Biopsy Results", x = "Class Labels", y = "Frequency") +
   theme_minimal()
 
-# Distribution of Smokes parameter according to biopsy results
+# Visualizations of distribution of smokes acc to biopsy
 ggplot(cancer_data, aes(x = as.factor(Smokes), fill = as.factor(Biopsy))) +
   geom_bar(position = "dodge") +
-  labs(title = "Distribution of Smokes Parameter According to Biopsy Results",
-       x = "Smoking Status",
-       y = "Number") +
+  labs(title = "Distribution of Smoking According to Biopsy Results",
+       x = "Smoking Status", y = "Count") +
   scale_x_discrete(labels = c("0" = "Non-smoking", "1" = "Smoking")) +
   scale_fill_discrete(name = "Biopsy Result", labels = c("Negative", "Positive")) +
   theme_minimal()
 
-# Distribution of Num of pregnancies according to biopsy results
+# Distribution of Number of Pregnancies According to Biopsy 
 ggplot(cancer_data, aes(x = as.factor(Biopsy), y = `Num.of.pregnancies`, fill = as.factor(Biopsy))) +
   geom_boxplot() +
-  labs(title = "Distribution of Num of Pregnancies According to Biopsy Results",
+  labs(title = "Distribution of Number of Pregnancies According to Biopsy Results",
        x = "Biopsy Result",
        y = "Number of Pregnancies") +
   scale_x_discrete(labels = c("0" = "Negative", "1" = "Positive")) +
   scale_fill_discrete(name = "Biopsy Result", labels = c("Negative", "Positive")) +
+  theme_minimal() +
+  theme(legend.position = "top")  # Optional: Move the legend to the top for better visibility
+
+# Distribution of Hormonal Contraceptives According to Biopsy Results
+ggplot(cancer_data, aes(x = as.factor(Hormonal.Contraceptives), fill = as.factor(Biopsy))) +
+  geom_bar(position = "dodge") +
+  labs(title = "Distribution of Hormonal Contraceptives According to Biopsy Results",
+       x = "Hormonal Contraceptives Status",
+       y = "Count") +
+  scale_x_discrete(labels = c("0" = "Non-User", "1" = "User")) +  # Update labels as necessary
+  scale_fill_discrete(name = "Biopsy Result", labels = c("Negative", "Positive")) +
   theme_minimal()
 
-# Reshape the data to a long format for ggplot
-cancer_data_long <- melt(cancer_data)
+# Calculate average age by biopsy result
+avg_age <- aggregate(Age ~ Biopsy, data = cancer_data, FUN = mean)
 
-# Create a boxplot for all variables in the dataset
-ggplot(cancer_data_long, aes(x = value, y = variable)) +
+ggplot(cancer_data, aes(x = as.factor(Biopsy), y = Age, fill = as.factor(Biopsy))) +
   geom_boxplot() +
-  labs(title = "Boxplot of Cancer Data", x = "Values", y = "Variables") +
-  theme_minimal() +
-  theme(axis.text.y = element_text(size = 12)) +
-  coord_flip()  # Flip coordinates to match the horizontal orientation
+  labs(title = "Distribution of Age According to Biopsy Results",
+       x = "Biopsy Result",
+       y = "Age") +
+  scale_x_discrete(labels = c("0" = "Negative", "1" = "Positive")) +
+  scale_fill_discrete(name = "Biopsy Result", labels = c("Negative", "Positive")) +
+  theme_minimal()
 ```
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------------------------------------
+## Correlation Matrix and Anova Test
+```R
+## Calculate the correlation matrix for numerical columns
+correlation_matrix <- cor(cancer_data[, numerical_df], use = "complete.obs")
 
-## Step 6: Feature Engineering
+
+# Reshape the correlation matrix into long format
+correlation_melted <- melt(correlation_matrix)
+
+#  Create the heatmap
+ggplot(correlation_melted, aes(Var1, Var2, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 0, limit = c(-1, 1), name = "Correlation") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  labs(title = "Correlation Matrix Heatmap", x = "Variables", y = "Variables")
+
+## Annova test
+# Loop through each numerical feature
+for (num_var in numerical_df) {
+  # Loop through each categorical feature
+  for (cat_var in categorical_df) {
+    # Check if the categorical variable is binary
+    if (length(unique(cancer_data[[cat_var]])) == 2) {
+      # Conduct ANOVA
+      anova_result <- aov(as.formula(paste(num_var, "~", cat_var)), data = cancer_data)
+      anova_summary <- summary(anova_result)
+      p_value_anova <- anova_summary[[1]][["Pr(>F)"]][1]
+      
+      # Print ANOVA results
+      cat(paste("ANOVA results for", num_var, "by", cat_var, "\n"))
+      cat(paste("p-value:", p_value_anova, "\n\n"))
+    }
+  }
+}
+```
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+## Feature Engineering
 ```R
 # Identify columns with zero variance (constant values)
-zero_variance_columns <- sapply(cancer_data, function(x) var(x, na.rm = TRUE) == 0)
-print(zero_variance_columns)
-# Remove columns with zero variance
+zero_variance_columns <- sapply(cancer_data, function(x) {
+  if (is.factor(x)) {
+    return(length(unique(x)) == 1)  # Check if all values are the same in factor columns
+  } else {
+    return(var(x, na.rm = TRUE) == 0)  # Check for zero variance in numerical columns
+  }
+})
+
+# Get the names of the zero variance columns
+zero_variance_colnames <- names(cancer_data)[zero_variance_columns]
+
+# Print the names of columns with zero variance
+cat("Columns with zero variance:", zero_variance_colnames, "\n")
+
+# Remove columns with zero variance from the dataset
 cancer_data <- cancer_data[, !zero_variance_columns]
 
-# Histogram of all numerical columns
-cancer_data %>%
-  select(where(is.numeric)) %>%
-  gather() %>%
-  ggplot(aes(value)) +
-  facet_wrap(~key, scales = "free") +
-  geom_histogram(fill = "steelblue", bins = 30) +
-  theme_minimal() +
-  labs(title = "Histograms of Numerical Columns")
-
-# Compute the correlation matrix on the filtered data
-correlation_matrix <- cor(cancer_data, use = "complete.obs")
-
-# Convert the correlation matrix into a data frame
-correlation_matrix_df <- as.data.frame(correlation_matrix)
-
-# Print the data frame
-print(correlation_matrix_df)
-
-# Convert correlation matrix to long format for ggplot2
-melted_cor_matrix <- melt(correlation_matrix)
-
-# Create the heatmap
-ggplot(data = melted_cor_matrix, aes(Var1, Var2, fill = value)) +
-  geom_tile(color = "white") +
-  scale_fill_gradient2(low = "blue", high = "red", mid = "white", limit = c(-1,1),
-                       name="Correlation", guide = "colorbar") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
-        axis.text.y = element_text(angle = 45, hjust = 1, vjust = 1)) +
-  labs(title = "Heatmap of Correlation Matrix")
+# Check the updated dataset
+str(cancer_data)
 ```
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 
-## Step 7: Data Splitting
+## Data Splitting
 ```R
-# Split the dataset into independent features (X) and target (y)
-X <- cancer_data[, -which(names(cancer_data) == "Biopsy")]
-y <- cancer_data$Biopsy
-
-# Set seed for reproducibility
+# Split data into independt variables and target variable as well as into training set and test set
 set.seed(42)
-
-# Split the data into training (80%) and testing (20%) sets
-train_index <- createDataPartition(y, p = 0.8, list = FALSE)
-X_train <- X[train_index, ]
-y_train <- y[train_index]
-X_test <- X[-train_index, ]
-y_test <- y[-train_index]
+train_index <- createDataPartition(cancer_data$Biopsy, p = 0.8, list = FALSE)
+X_train <- cancer_data[train_index, -which(names(cancer_data) == "Biopsy")]
+y_train <- cancer_data$Biopsy[train_index]
+X_test <- cancer_data[-train_index, -which(names(cancer_data) == "Biopsy")]
+y_test <- cancer_data$Biopsy[-train_index]
 ```
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
-
-## Step 8: KNN Model
+## KNN Model
 ```R
-# Train the KNN model
-k <- 5  # Number of neighbors
+# Define the value of k (number of neighbors)
+k <- 5
+
+# Train the KNN model and make predictions
 knn_pred <- knn(train = X_train, test = X_test, cl = y_train, k = k)
 
-# Calculate accuracy
-accuracy <- sum(knn_pred == y_test) / length(y_test)
-cat("KNN Accuracy:", accuracy, "\n")
+# Calculate accuracy of the KNN model
+accuracy_knn <- sum(knn_pred == y_test) / length(y_test)
 
-# Create confusion matrix
-confusion_matrix <- table(Predicted = knn_pred, Actual = y_test)
-print(confusion_matrix)
+# Create a confusion matrix to evaluate prediction performance
+conf_matrix_knn <- table(Predicted = knn_pred, Actual = y_test)
+print(conf_matrix_knn)
+
+# Calculate F1 Score (ensure F1_Score function is defined or loaded from a library)
+f1_knn <- F1_Score(y_test, knn_pred)
+print(f1_knn)
+
+#Calculate accuracy for KNN model
+accuracy_knn <- sum(knn_pred == y_test) / length(y_test)
+print(accuracy_knn)
 
 # Visualize the confusion matrix using ggplot2
-conf_matrix_df <- as.data.frame(confusion_matrix)
+conf_matrix_df <- as.data.frame(conf_matrix_knn)
 ggplot(data = conf_matrix_df, aes(x = Actual, y = Predicted)) +
   geom_tile(aes(fill = Freq), color = "white") +
   scale_fill_gradient(low = "lightblue", high = "darkblue") +
   geom_text(aes(label = Freq), vjust = 1) +
   theme_minimal() +
   labs(title = "KNN Confusion Matrix", x = "Actual Labels", y = "Predicted Labels")
-
-library(pROC)
-# Calculate accuracy
-accuracy <- sum(knn_pred == y_test) / length(y_test)
-cat("KNN Accuracy:", accuracy, "\n")
-
-#install.packages("MLmetrics")
-library(MLmetrics)
-
-# Calculate F1 Score
-f1_score <- F1_Score(y_test, knn_pred)
-cat("KNN F1 Score:", f1_score, "\n")
-
-# Feature Importance (using absolute correlation with target variable)
-feature_importance <- sapply(X, function(col) cor(col, y))  # Calculate correlation for each feature
-importance_df <- data.frame(Feature = names(feature_importance), Importance = abs(feature_importance))
-
-# Remove features with zero importance (if any)
-importance_df <- importance_df[importance_df$Importance > 0, ]
-
-# Sort by importance
-importance_df <- importance_df[order(-importance_df$Importance), ]
-
-# Select top 5 features KNN
-top_features <- head(importance_df, 5)
-
-# Visualize Top 5 Feature Importance
-ggplot(top_features, aes(x = reorder(Feature, Importance), y = Importance)) +
-  geom_bar(stat = "identity", fill = "steelblue") +
-  coord_flip() +
-  labs(title = "Top 5 Feature Importance KNN Model", x = "Features", y = "Importance") +
-  theme_minimal()
 ```
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
-
-## Step 9: SVM Model
+## Random Forest Model
 ```R
-# Train the SVM model
-svm_model <- svm(X_train, as.factor(y_train), kernel = "linear")  # Change kernel as needed
+# Train the Random Forest model
+rf_model <- randomForest(x = X_train, y = as.factor(y_train), ntree = 100)
 
-# Make predictions on the test set
-svm_pred <- predict(svm_model, X_test)
-
-# Calculate accuracy
-accuracy <- sum(svm_pred == y_test) / length(y_test)
-cat("SVM Accuracy:", accuracy, "\n")
-
-# Calculate F1 Score
-f1_score <- F1_Score(y_test, svm_pred)
-cat("SVM F1 Score:", f1_score, "\n")
-
-# Create confusion matrix
-confusion_matrix <- table(Predicted = svm_pred, Actual = y_test)
-print(confusion_matrix)
-
-# Visualize the confusion matrix using ggplot2
-conf_matrix_df <- as.data.frame(confusion_matrix)
-ggplot(data = conf_matrix_df, aes(x = Actual, y = Predicted)) +
-  geom_tile(aes(fill = Freq), color = "white") +
-  scale_fill_gradient(low = "lightblue", high = "darkblue") +
-  geom_text(aes(label = Freq), vjust = 1) +
-  theme_minimal() +
-  labs(title = "SVM Confusion Matrix", x = "Actual Labels", y = "Predicted Labels")
-
-# Get the coefficients of the model
-coef_vector <- t(svm_model$coefs) %*% svm_model$SV
-print(coef_vector)
-
-# Check the coefficient vector to ensure it's numeric
-if (!is.numeric(coef_vector)) {
-  stop("Coefficients are not numeric.")
-}
-
-# Create a data frame for feature importance
-importance_df <- data.frame(Feature = colnames(X_train), Importance = as.numeric(abs(coef_vector)))
-
-# Check the structure of the importance_df
-str(importance_df)
-
-# Sort by importance
-importance_df <- importance_df[order(-importance_df$Importance), ]
-
-# Select top 5 features
-top_5_features <- head(importance_df, 5)
-
-# Visualize Top 5 Features SVM
-#library(ggplot2)
-
-ggplot(top_5_features, aes(x = reorder(Feature, Importance), y = Importance)) +
-  geom_bar(stat = "identity", fill = "steelblue") +
-  coord_flip() +
-  labs(title = "Top 5 Features Importance SVM Model", x = "Features", y = "Importance") +
-  theme_minimal()
-```
-----------------------------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------------------------
-
-## Step 10: Random Forest Model
-```R
-#Train the Random Forest model
-rf_model <- randomForest(x = X_train, y = as.factor(y_train), ntree = 100)  # Adjust ntree as needed
-
-# Make predictions on the test set
+#  Make predictions on the test set using Random Forest
 rf_pred <- predict(rf_model, X_test)
 
-# Calculate accuracy
-accuracy <- sum(rf_pred == y_test) / length(y_test)
-cat("Random Forest Accuracy:", accuracy, "\n")
+# Calculate accuracy for the Random Forest model
+accuracy_rf <- sum(rf_pred == y_test) / length(y_test)
+print(accuracy_rf)
 
-# Calculate F1 Score
-f1_score <- F1_Score(y_test, rf_pred)
-cat("RF model F1 Score:", f1_score, "\n")
+# Calculate F1 Score for Random Forest
+f1_rf <- F1_Score(y_test, rf_pred)
 
-# Create confusion matrix
-confusion_matrix <- table(Predicted = rf_pred, Actual = y_test)
-print(confusion_matrix)
+# Create a confusion matrix for Random Forest predictions
+conf_matrix_rf <- table(Predicted = rf_pred, Actual = y_test)
 
-# Visualize the confusion matrix using ggplot2
-conf_matrix_df <- as.data.frame(confusion_matrix)
+# Output the Random Forest model results
+cat("Random Forest - Accuracy:", accuracy_rf, "F1 Score:", f1_rf, "\n")
+print(conf_matrix_rf)
+#Accuracy: 0.9638554 F1 Score: 0.9808917 
+
+# Visualize the confusion matrix using ggplot2 for Random Forest Model
+conf_matrix_df <- as.data.frame(conf_matrix_rf)
 ggplot(data = conf_matrix_df, aes(x = Actual, y = Predicted)) +
   geom_tile(aes(fill = Freq), color = "white") +
   scale_fill_gradient(low = "lightblue", high = "darkblue") +
@@ -355,176 +319,180 @@ ggplot(data = conf_matrix_df, aes(x = Actual, y = Predicted)) +
   theme_minimal() +
   labs(title = "Random Forest Confusion Matrix", x = "Actual Labels", y = "Predicted Labels")
 
-# Calculate feature importance
-importance_rf <- importance(rf_model)
+# Get feature importance
+rf_importance <- importance(rf_model)
 
-# Create a data frame for feature importance
-importance_df_rf <- data.frame(Feature = rownames(importance_rf), Importance = importance_rf[, 1])
+# Convert to data frame for easier handling
+importance_df <- data.frame(Feature = rownames(rf_importance), Importance = rf_importance[, 1])
 
-# Sort by importance
-importance_df_rf <- importance_df_rf[order(-importance_df_rf$Importance), ]
+# Sort by importance and select the top 5 features
+top_features <- importance_df[order(importance_df$Importance, decreasing = TRUE), ][1:5, ]
 
-# Select top 5 features
-top_5_features_rf <- head(importance_df_rf, 5)
+# Print the top 5 features
+print(top_features)
 
-# Visualize Top 5 Features Importance RF Model
-ggplot(top_5_features_rf, aes(x = reorder(Feature, Importance), y = Importance)) +
-  geom_bar(stat = "identity", fill = "forestgreen") +
-  coord_flip() +
-  labs(title = "Top 5 Features Importance RF Model", x = "Features", y = "Importance") +
+# Create a bar plot for the top 5 feature importances RF
+ggplot(top_features, aes(x = reorder(Feature, Importance), y = Importance)) +
+  geom_bar(stat = "identity", fill = "lightblue") +
+  coord_flip() +  # Flip the axes for better visibility
+  labs(title = "Top 5 Feature Importance - RF",
+       x = "Features",
+       y = "Importance") +
   theme_minimal()
 ```
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
-
-## Step 11: Decision Tree Model
+## Decision Tree Model
 ```R
 # Train the Decision Tree model
 dt_model <- rpart(as.factor(y_train) ~ ., data = data.frame(X_train, y_train), method = "class")
 
-# Make predictions on the test set
+# Make predictions on the test set using the Decision Tree model
 dt_pred <- predict(dt_model, newdata = data.frame(X_test), type = "class")
 
-# Calculate accuracy
-accuracy <- sum(dt_pred == y_test) / length(y_test)
-cat("Decision Tree Accuracy:", accuracy, "\n")
+#  Calculate accuracy for the Decision Tree model
+accuracy_dt <- sum(dt_pred == y_test) / length(y_test)
 
-# Calculate F1 Score
-f1_score <- F1_Score(y_test, dt_pred)
-cat("Decision Tree F1 Score:", f1_score, "\n")
+# Calculate F1 Score for Decision Tree
+f1_dt <- F1_Score(y_test, dt_pred)
 
-# Create confusion matrix
-confusion_matrix <- table(Predicted = dt_pred, Actual = y_test)
-print(confusion_matrix)
+#  Create a confusion matrix for Decision Tree predictions
+conf_matrix_dt <- table(Predicted = dt_pred, Actual = y_test)
 
-# Visualize the confusion matrix using ggplot2
-conf_matrix_df <- as.data.frame(confusion_matrix)
+# Output the Decision Tree model results
+cat("Decision Tree - Accuracy:", accuracy_dt, "F1 Score:", f1_dt, "\n")
+print(conf_matrix_dt)
+#Decision Tree - Accuracy: 0.9578313 F1 Score: 0.9776358 
+
+# Visualize the confusion matrix using ggplot2 for Decision Tree
+conf_matrix_df <- as.data.frame(conf_matrix_dt)
 ggplot(data = conf_matrix_df, aes(x = Actual, y = Predicted)) +
   geom_tile(aes(fill = Freq), color = "white") +
   scale_fill_gradient(low = "lightblue", high = "darkblue") +
   geom_text(aes(label = Freq), vjust = 1) +
   theme_minimal() +
-  labs(title = "Decision Tree Confusion Matrix", x = "Actual Labels", y = "Predicted Labels")
+  labs(title = "Decision tree Confusion Matrix", x = "Actual Labels", y = "Predicted Labels")
 
-# Visualize the Decision Tree
-rpart.plot(dt_model, main = "Decision Tree")
+# Get feature importance
+dt_importance <- dt_model$variable.importance
 
-# Calculate feature importance
-importance_dt <- dt_model$variable.importance
+# Convert to data frame for easier handling
+dt_importance_df <- data.frame(Feature = names(dt_importance), Importance = dt_importance)
 
-# Create a data frame for feature importance
-importance_df_dt <- data.frame(Feature = names(importance_dt), Importance = importance_dt)
+# Sort by importance and select the top 5 features
+top_dt_features <- dt_importance_df[order(dt_importance_df$Importance, decreasing = TRUE), ][1:5, ]
 
-# Sort by importance
-importance_df_dt <- importance_df_dt[order(-importance_df_dt$Importance), ]
+# Print the top 5 features
+print(top_dt_features)
 
-# Select top 5 features
-top_5_features_dt <- head(importance_df_dt, 5)
-
-# Visualize Top 5 Features Importance
-ggplot(top_5_features_dt, aes(x = reorder(Feature, Importance), y = Importance)) +
-  geom_bar(stat = "identity", fill = "orange") +
-  coord_flip() +
-  labs(title = "Top 5 Features Importance DT Model", x = "Features", y = "Importance") +
+# Create a bar plot for the top 5 feature importances Decision Tree Model
+ggplot(top_dt_features, aes(x = reorder(Feature, Importance), y = Importance)) +
+  geom_bar(stat = "identity", fill = "lightgreen") +
+  coord_flip() +  # Flip the axes for better visibility
+  labs(title = "Top 5 Feature Importance DT",
+       x = "Features",
+       y = "Importance") +
   theme_minimal()
 ```
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-## Step 12: XGBoost Model
+## Artificial Neural Network Model
 ```R
-# Convert data to matrix format for XGBoost
-dtrain <- xgb.DMatrix(data = as.matrix(X_train), label = as.numeric(as.factor(y_train)) - 1)  # Convert factor to numeric
-dtest <- xgb.DMatrix(data = as.matrix(X_test), label = as.numeric(as.factor(y_test)) - 1)  # Convert factor to numeric
+# Prepare the training data for ANN
+X_train_ann <- as.data.frame(X_train)  # Convert to data frame if not already
+y_train_ann <- as.factor(y_train)       # Ensure target variable is a factor
 
-# Set parameters for the XGBoost model
-params <- list(
-  objective = "binary:logistic",  # For binary classification
-  eval_metric = "logloss",
-  eta = 0.1,  # Learning rate
-  max_depth = 6,  # Maximum depth of the tree
-  nrounds = 100  # Number of boosting rounds
-)
-
-# Train the XGBoost model
-xgb_model <- xgb.train(
-  params = params,
-  data = dtrain,
-  nrounds = params$nrounds,
-  watchlist = list(train = dtrain, eval = dtest),
-  early_stopping_rounds = 10,  # Stop if no improvement for 10 rounds
-  print_every_n = 10
-)
+library(nnet)
+# Fit the ANN model
+set.seed(42)  # For reproducibility
+ann_model <- nnet(y_train_ann ~ ., data = X_train_ann, size = 5, maxit = 200)
 
 # Make predictions on the test set
-xgb_pred <- predict(xgb_model, newdata = dtest)
+X_test_ann <- as.data.frame(X_test)  # Convert test data to data frame
+ann_pred_prob <- predict(ann_model, newdata = X_test_ann, type = "class")
 
-# Convert predictions to binary class (0 or 1)
-xgb_pred_class <- ifelse(xgb_pred > 0.5, 1, 0)
+# Evaluate the model
+accuracy_ann <- sum(ann_pred_prob == y_test) / length(y_test)
+f1_ann <- F1_Score(y_test, ann_pred_prob)
+conf_matrix_ann <- table(Predicted = ann_pred_prob, Actual = y_test)
 
-# Calculate accuracy
-accuracy <- sum(xgb_pred_class == (as.numeric(as.factor(y_test)) - 1)) / length(y_test)
-cat("XGBoost Accuracy:", accuracy, "\n")
+# Print results
+cat("ANN - Accuracy:", accuracy_ann, "F1 Score:", f1_ann, "\n")
+print(conf_matrix_ann)
+#ANN - Accuracy: 0.939759 F1 Score: 0.9689441 
 
-# Calculate F1 Score using MLmetrics package
-f1_score <- F1_Score(y_true = as.numeric(as.factor(y_test)) - 1, y_pred = xgb_pred_class, positive = "1")
-cat("XGBoost F1 Score:", f1_score, "\n")
+# Create the confusion matrix dataframe manually
+conf_matrix_ann <- matrix(c(156, 10, 5, 36), nrow = 2, byrow = TRUE)
+rownames(conf_matrix_ann) <- c("0", "1")
+colnames(conf_matrix_ann) <- c("0", "1")
 
-# Create confusion matrix
-confusion_matrix <- table(Predicted = xgb_pred_class, Actual = as.numeric(as.factor(y_test)) - 1)
-print(confusion_matrix)
+# Convert confusion matrix to data frame for ggplot
+conf_matrix_df <- as.data.frame(as.table(conf_matrix_ann))
 
-# Visualize the confusion matrix using ggplot2
-conf_matrix_df <- as.data.frame(confusion_matrix)
-library(ggplot2)  # Load ggplot2 for visualization
+# Rename columns for better clarity
+colnames(conf_matrix_df) <- c("Predicted", "Actual", "Freq")
+
+# Visualize the confusion matrix using ggplot2 for ANN
 ggplot(data = conf_matrix_df, aes(x = Actual, y = Predicted)) +
   geom_tile(aes(fill = Freq), color = "white") +
   scale_fill_gradient(low = "lightblue", high = "darkblue") +
-  geom_text(aes(label = Freq), vjust = 1) +
+  geom_text(aes(label = Freq), color = "white", vjust = 1) +
   theme_minimal() +
-  labs(title = "XGBoost Confusion Matrix", x = "Actual Labels", y = "Predicted Labels")
+  labs(title = "ANN Confusion Matrix", x = "Actual Labels", y = "Predicted Labels") +
+  scale_x_discrete(limits = c("0", "1")) +
+  scale_y_discrete(limits = c("0", "1")) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-# Calculate feature importance
-importance_xgb <- xgb.importance(model = xgb_model)
+# Function to get feature importance from the ANN model
+get_ann_importance <- function(model, data) {
+  # Extract weights from the first layer
+  weights <- model$wts[1:(ncol(data) * 5)]  # Assuming size = 5 in the model
+  # Create a data frame of features and their importance
+  importance_df <- data.frame(Feature = colnames(data), Importance = abs(weights))
+  # Sum the absolute weights for each feature across all nodes
+  importance_summary <- aggregate(Importance ~ Feature, data = importance_df, FUN = sum)
+  # Sort features by importance
+  importance_summary <- importance_summary[order(-importance_summary$Importance), ]
+  return(importance_summary)
+}
 
-# Create a data frame for top 5 feature importance
-top_5_features_xgb <- importance_xgb[1:5, ]
+# Get feature importance
+ann_importance_df <- get_ann_importance(ann_model, X_train_ann)
 
-# Visualize Top 5 Features Importance
-ggplot(top_5_features_xgb, aes(x = reorder(Feature, Gain), y = Gain)) +
-  geom_bar(stat = "identity", fill = "purple") +
-  coord_flip() +
-  labs(title = "Top 5 Features Importance from XGBoost Model", x = "Features", y = "Gain") +
+# Print the top 5 features
+top_5_ann_features <- head(ann_importance_df, 5)
+print(top_5_ann_features)
+
+# Visualize the top 5 features ANN Model
+ggplot(top_5_ann_features, aes(x = reorder(Feature, Importance), y = Importance)) +
+  geom_bar(stat = "identity", fill = "pink") +
+  coord_flip() +  # Flip coordinates for better readability
+  labs(title = "Top 5 Features ANN Model",
+       x = "Feature",
+       y = "Importance") +
   theme_minimal()
 ```
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-## Step 13: Model Comparison
+## Feature Importance Comparison of Random Forest, Decision Tree and ANN Model
 ```R
 # Comparison of top features data frames from 5 models
-top_features_knn <- data.frame(Feature = c("Schiller", "Hinselmann", "Citology", "Dx.HPV", "Dx.Cancer"),
-                               Importance = c(0.1, 0.3, 0.4, 0.2, 0.1))
-top_features_svm <- data.frame(Feature = c("Schiller", "STDs.syphilis", "STDs..number", "STDs.vulvo.perineal.condylomatosis", "STDs.condylomatosis"),
-                               Importance = c(0.2, 0.5, 0.3, 0.1, 0.4))
-top_features_rf <- data.frame(Feature = c("Schiller", "Hinselmann", "Age", "Hormonal.Contraceptives..years.", "First.sexual.intercourse"),
+top_features_rf <- data.frame(Feature = c("Schiller", "Hinselmann", "Age","First.sexual.intercourse", "Hormonal.Contraceptives..years."),
                               Importance = c(0.4, 0.3, 0.5, 0.2, 0.1))
-top_features_dt <- data.frame(Feature = c("Schiller", "Hinselmann", "Hormonal.Contraceptives..years.", "Citology", "Smokes..packs.year."),
+top_features_dt <- data.frame(Feature = c("Schiller", "Hinselmann", "Hormonal.Contraceptives..years.", "Citology", "STDs..number."),
                               Importance = c(0.3, 0.2, 0.4, 0.1, 0.5))
-top_features_xgb <- data.frame(Feature = c("Schiller", "Age", "Num.of.pregnancies", "First.sexual.intercourse", "Hormonal.Contraceptives..years."),
+top_features_ANN <- data.frame(Feature = c("Smokes", "Smokes..packs.year.", "STDs.condylomatosis", "STDs.vulvo.perineal.condylomatosis", "IUD..years."),
                                Importance = c(0.5, 0.4, 0.3, 0.2, 0.1))
 
 # Add a column indicating the model for each top features data frame
-top_features_knn$Model <- "KNN"
-top_features_svm$Model <- "SVM"
 top_features_rf$Model <- "Random Forest"
 top_features_dt$Model <- "Decision Tree"
-top_features_xgb$Model <- "XGBoost"
+top_features_ANN$Model <- "Artificial Neural NetWork"
 
 # Combine all top features data frames into one
-combined_importance <- bind_rows(top_features_knn, top_features_svm, 
-                                 top_features_rf, top_features_dt, 
-                                 top_features_xgb)
+combined_importance <- bind_rows(top_features_rf, top_features_dt, 
+                                 top_features_ANN)
 
 # Plotting
 ggplot(combined_importance, aes(x = reorder(Feature, Importance), y = Importance, fill = Model)) +
