@@ -80,7 +80,7 @@ missing_perc <- colSums(is.na(data)) / nrow(data)
 # Print the percenatge of missisng values
 print(missing_perc)
 ```
-> The dataset comprises 835 observations and 36 variables, with varying degrees of missing values. Notable missing counts include Num.of.pregnancies (56), IUD (112), and a significant STDs..Time.since.first.diagnosis (764). The percentage of missing values ranges from 0.84% for First.sexual.intercourse to 91.50% for STDs..Time.since.first.diagnosis, indicating considerable data loss in several columns. This missing data must be addressed before further analysis or modeling can proceed.
+The dataset comprises 835 observations and 36 variables, with varying degrees of missing values. Notable missing counts include Num.of.pregnancies (56), IUD (112), and a significant STDs..Time.since.first.diagnosis (764). The percentage of missing values ranges from 0.84% for First.sexual.intercourse to 91.50% for STDs..Time.since.first.diagnosis, indicating considerable data loss in several columns. This missing data must be addressed before further analysis or modeling can proceed.
 
 > Identifying numerical and Categorical features
 ```R
@@ -138,7 +138,7 @@ ggplot(biopsy_df, aes(x = Var1, y = Freq, fill = Var1)) +
   labs(title = "Biopsy Results", x = "Class Labels", y = "Frequency") +
   theme_minimal()
 ```
-> we explore here demographic and health variables for groups with positive and negative biopsy results:
+we explore here demographic and health variables for groups with positive and negative biopsy results:
 
 - Group Separation: Filters data into biopsy_positive (Biopsy = 1) and biopsy_negative (Biopsy = 0) for focused analysis.
 - Positive Biopsy Summary: Provides statistics for age (16–52, median 28), number of sexual partners (avg. ~2.5), smoking status (10 smoke, 44 don’t), and STD indicators (mostly zero values).
@@ -251,7 +251,7 @@ ggplot(correlation_melted, aes(Var1, Var2, fill = value)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
   labs(title = "Correlation Matrix Heatmap", x = "Variables", y = "Variables")
 ```
-> Key Observations from the Correlation Heatmap: -
+Key Observations from the Correlation Heatmap: -
 
 1. Strong Positive Correlations: (Strong red colour)
 
@@ -291,18 +291,15 @@ for (num_var in numerical_df) {
   }
 }
 ```
-> The ANOVA test results indicate significant associations between various health and lifestyle variables and demographic factors such as age and smoking habits, highlighting the following key findings:
+The ANOVA test results indicate significant associations between various health and lifestyle variables and demographic factors such as age and smoking habits, highlighting the following key findings:
 
 - Age: Strongly significant associations with IUD usage (p < 0.001), cancer diagnosis (p = 0.0017), HPV diagnosis (p = 0.0039), and Schiller Test results (p = 0.0034) suggest that age influences these health-related outcomes.
 -  Number of Sexual Partners: A significant correlation with smoking status (p < 0.001) implies that smoking behavior may relate to an individual's sexual history.
 - First Sexual Intercourse Age: Smoking (p = 0.0002) and certain STDs (syphilis: p = 0.0045; vaginal condylomatosis: p = 0.033) are significantly associated with the age at which individuals first engage in sexual activity.
 - Number of Pregnancies: Significant relationships are observed with IUD usage (p < 0.001), hormonal contraceptives (p = 0.0027), and STDs (syphilis: p = 0.00003), indicating these factors may affect pregnancy frequency.
 - Smoking History: Both smoking duration (years) and intensity (packs/year) show a strong association with smoking status (p < 0.001), along with significant correlations with certain STDs (HIV: p = 0.0095; Hepatitis B: p = 0.0042) and Schiller Test results (p = 0.0064).
-- Biopsy Results:
+- Biopsy Results: In contrast, the ANOVA results indicate that none of the analyzed demographic and health factors exhibit statistically significant correlations with biopsy results, as all p-values exceed the conventional significance threshold of 0.05. The only borderline case is the association between smoking years and biopsy (p = 0.0759), which suggests a potential trend but does not meet the criteria for statistical significance. Therefore, overall, the analysis underscores significant correlations between age, sexual behavior, and smoking with various health variables, suggesting behavioral and demographic influences on health conditions. However, the lack of significant correlations with biopsy results indicates that further research is needed to explore these relationships more deeply, particularly regarding smoking history.
 
-In contrast, the ANOVA results indicate that none of the analyzed demographic and health factors exhibit statistically significant correlations with biopsy results, as all p-values exceed the conventional significance threshold of 0.05. The only borderline case is the association between smoking years and biopsy (p = 0.0759), which suggests a potential trend but does not meet the criteria for statistical significance. Therefore, overall, the analysis underscores significant correlations between age, sexual behavior, and smoking with various health variables, suggesting behavioral and demographic influences on health conditions. However, the lack of significant correlations with biopsy results indicates that further research is needed to explore these relationships more deeply, particularly regarding smoking history.
---------------------------------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Feature Engineering
 ```R
 # Identify columns with zero variance (constant values)
@@ -326,12 +323,11 @@ cancer_data <- cancer_data[, !zero_variance_columns]
 # Check the updated dataset
 str(cancer_data)
 ```
---------------------------------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------------------------------
+We conduct feature engineering where columns with zero variance (i.e., columns where all values are the same) are identified and removed from the dataset. The updated cancer_dataset no longer includes these uninformative columns, this has been done in oreder to reduce dimensionality and to improving model efficiency before training models in our next steps.
 
-## Data Splitting
+## Data Splitting 
 ```R
-# Split data into independt variables and target variable as well as into training set and test set
+# Split data into independent variables and target variable as well as into training set and test set
 set.seed(42)
 train_index <- createDataPartition(cancer_data$Biopsy, p = 0.8, list = FALSE)
 X_train <- cancer_data[train_index, -which(names(cancer_data) == "Biopsy")]
@@ -339,8 +335,9 @@ y_train <- cancer_data$Biopsy[train_index]
 X_test <- cancer_data[-train_index, -which(names(cancer_data) == "Biopsy")]
 y_test <- cancer_data$Biopsy[-train_index]
 ```
----------------------------------------------------------------------------------------------------------------------------------------------------------
----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+## Models:
+
 ## KNN Model
 ```R
 # Define the value of k (number of neighbors)
@@ -373,8 +370,15 @@ ggplot(data = conf_matrix_df, aes(x = Actual, y = Predicted)) +
   theme_minimal() +
   labs(title = "KNN Confusion Matrix", x = "Actual Labels", y = "Predicted Labels")
 ```
------------------------------------------------------------------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------------------------------------------------------------------
+The confusion matrix shows the performance of the K-Nearest Neighbors (KNN) model in predicting biopsy results:
+
+- True Negatives (TN): 156 cases were correctly predicted as negative (0).
+- False Positives (FP): 10 cases were incorrectly predicted as negative, but were actually positive.
+- False Negatives (FN): 0 cases were incorrectly predicted as positive, though they were negative.
+- True Positives (TP): 0 cases were correctly predicted as positive.
+- F1 Score (96.8%): This score balances precision and recall, indicating strong predictive performance in identifying the negative class, as there were no true positives. The high F1 score reflects high precision and recall for classifying negatives correctly.
+- Accuracy (93.8%): This score reflects the proportion of correct predictions among all predictions, with the model accurately predicting the majority negative class in this dataset.
+
 ## Random Forest Model
 ```R
 # Train the Random Forest model
