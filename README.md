@@ -176,9 +176,9 @@ ggplot(cancer_data, aes(x = as.factor(Biopsy), y = Age, fill = as.factor(Biopsy)
 ```
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------------------------------------
-**Correlation Matrix and Anova Test**
+## **Correlation Matrix and Anova Test**
 
-## Correlation Matrix Calculation
+> Correlation Matrix Calculation
 ```R
 ## Calculate the correlation matrix for numerical columns
 correlation_matrix <- cor(cancer_data[, numerical_df], use = "complete.obs")
@@ -195,7 +195,7 @@ ggplot(correlation_melted, aes(Var1, Var2, fill = value)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
   labs(title = "Correlation Matrix Heatmap", x = "Variables", y = "Variables")
 ```
-> Key Observations from the Correlation Heatmap: -
+# Key Observations from the Correlation Heatmap: -
 
 1. Strong Positive Correlations: (Strong red colour)
 
@@ -235,7 +235,7 @@ for (num_var in numerical_df) {
   }
 }
 ```
-> The ANOVA test results indicate significant associations between various health and lifestyle variables and demographic factors such as age and smoking habits, highlighting the following key findings:
+# The ANOVA test results indicate significant associations between various health and lifestyle variables and demographic factors such as age and smoking habits, highlighting the following key findings:
 
 Age: Strongly significant associations with IUD usage (p < 0.001), cancer diagnosis (p = 0.0017), HPV diagnosis (p = 0.0039), and Schiller Test results (p = 0.0034) suggest that age influences these health-related outcomes.
 
