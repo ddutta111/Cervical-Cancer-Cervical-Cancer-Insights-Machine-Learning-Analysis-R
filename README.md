@@ -63,6 +63,7 @@ data <- read.csv("D:\\R Projects\\cervical-cancer_csv.csv")
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## Data Exploration & Data Pre-Processing
+> Data Summary Check
 ```R
 # Check the structure of the data
 str(data)
@@ -78,7 +79,11 @@ missing_perc <- colSums(is.na(data)) / nrow(data)
 
 # Print the percenatge of missisng values
 print(missing_perc)
+```
+- The dataset comprises 835 observations and 36 variables, with varying degrees of missing values. Notable missing counts include Num.of.pregnancies (56), IUD (112), and a significant STDs..Time.since.first.diagnosis (764). The percentage of missing values ranges from 0.84% for First.sexual.intercourse to 91.50% for STDs..Time.since.first.diagnosis, indicating considerable data loss in several columns. This missing data must be addressed before further analysis or modeling can proceed.
 
+> Identifying numerical and Categorical features
+```R
 # Separate numerical and categorical columns as per given lists
 numerical_df <- c('Age', 'Number.of.sexual.partners', 'First.sexual.intercourse', 'Num.of.pregnancies', 'Smokes..years.', 
                   'Smokes..packs.year.', 'Hormonal.Contraceptives..years.', 'IUD..years.', 'STDs..number.')
@@ -88,8 +93,9 @@ categorical_df <- c('Smokes', 'Hormonal.Contraceptives', 'IUD', 'STDs', 'STDs.co
                     'STDs.pelvic.inflammatory.disease', 'STDs.genital.herpes', 'STDs.molluscum.contagiosum', 
                     'STDs.AIDS', 'STDs.HIV', 'STDs.Hepatitis.B', 'STDs.HPV', 'STDs..Number.of.diagnosis', 
                     'Dx.Cancer', 'Dx.CIN', 'Dx.HPV', 'Dx', 'Hinselmann', 'Schiller', 'Citology', 'Biopsy')
-
-
+```
+> Update dataset: Taking care of misssing values thrugh dropping variables & replacement of values and Taking care of categorical fetaures
+```R
 # Drop columns with >90% missing values
 data_cleaned <- data %>%
   select(where(~ sum(is.na(.)) / nrow(data) <= 0.90))
@@ -104,6 +110,10 @@ cancer_data <- data_cleaned %>%
   mutate(across(all_of(numerical_df), ~ ifelse(is.na(.), mean(., na.rm = TRUE), .))) %>%
   mutate(across(all_of(categorical_df), ~ ifelse(is.na(.), Mode(.), .)))
 
+# Convert categorical columns to factors
+cancer_data <- cancer_data %>%
+  mutate(across(all_of(categorical_df), as.factor))
+
 # Check the cleaned and imputed dataset
 print(summary(cancer_data))
 ```
@@ -111,10 +121,6 @@ print(summary(cancer_data))
 -----------------------------------------------------------------------------------------------------------------------------------------------------
 ## Visually Data Exploration
 ```R
-# Convert categorical columns to factors
-cancer_data <- cancer_data %>%
-  mutate(across(all_of(categorical_df), as.factor))
-
 # Separating groups with positive and negative biopsy results
 biopsy_positive <- cancer_data %>% filter(Biopsy == 1)
 biopsy_negative <- cancer_data %>% filter(Biopsy == 0)
@@ -131,7 +137,18 @@ ggplot(biopsy_df, aes(x = Var1, y = Freq, fill = Var1)) +
   scale_fill_manual(values = c("darkturquoise", "coral")) +
   labs(title = "Biopsy Results", x = "Class Labels", y = "Frequency") +
   theme_minimal()
+```
+> we explore here demographic and health variables for groups with positive and negative biopsy results:
 
+- Group Separation: Filters data into biopsy_positive (Biopsy = 1) and biopsy_negative (Biopsy = 0) for focused analysis.
+- Positive Biopsy Summary: Provides statistics for age (16–52, median 28), number of sexual partners (avg. ~2.5), smoking status (10 smoke, 44 don’t), and STD indicators (mostly zero values).
+This summary highlights key characteristics and patterns within the biopsy-positive group, which could be relevant to biopsy outcomes.
+
+![Biopsy plot](https://github.com/user-attachments/assets/d0740956-08e1-47e0-8c05-987ebfbf395b)
+The graph shows the distribution of biopsy results. It appears that the majority of the biopsies (around 800) were negative (class label 0), while only a small number (around 50) were positive (class label 1). This suggests that the majority of the patients in this study did not have the condition being tested for.
+
+> Visual analysis of effects of Smokes acc. to Biopsy results
+```R
 # Visualizations of distribution of smokes acc to biopsy
 ggplot(cancer_data, aes(x = as.factor(Smokes), fill = as.factor(Biopsy))) +
   geom_bar(position = "dodge") +
@@ -140,7 +157,16 @@ ggplot(cancer_data, aes(x = as.factor(Smokes), fill = as.factor(Biopsy))) +
   scale_x_discrete(labels = c("0" = "Non-smoking", "1" = "Smoking")) +
   scale_fill_discrete(name = "Biopsy Result", labels = c("Negative", "Positive")) +
   theme_minimal()
+```
+![Smoke vs  Biopsy Distribution](https://github.com/user-attachments/assets/bc921c41-1269-4db4-a816-fd279a615ea2)
+This bar chart shows the distribution of smoking status among individuals with positive and negative biopsy results.
 
+Non-smoking: The majority of individuals with negative biopsy results are non-smokers (high red bar), while a smaller portion with positive biopsy results also falls in this group (small blue bar).
+Smoking: Fewer individuals smoke, with a higher count of negative biopsy results (red) compared to positive results (blue) among smokers.
+Overall, most individuals are non-smokers, regardless of biopsy result, though there is a noticeable drop in positive cases among smokers compared to non-smokers.
+
+> Visual Exploration of Number of pregnancies acc. to Biopsy
+```R
 # Distribution of Number of Pregnancies According to Biopsy 
 ggplot(cancer_data, aes(x = as.factor(Biopsy), y = `Num.of.pregnancies`, fill = as.factor(Biopsy))) +
   geom_boxplot() +
@@ -151,7 +177,18 @@ ggplot(cancer_data, aes(x = as.factor(Biopsy), y = `Num.of.pregnancies`, fill = 
   scale_fill_discrete(name = "Biopsy Result", labels = c("Negative", "Positive")) +
   theme_minimal() +
   theme(legend.position = "top")  # Optional: Move the legend to the top for better visibility
+```
+> ![Number of preg vs Biopsy](https://github.com/user-attachments/assets/95a63b98-d12a-4897-a43c-06a84455879a)
+The graph shows how the number of pregnancies is distributed among patients who had negative and positive biopsy results:
 
+- Median: The median number of pregnancies is slightly higher for patients with positive biopsy results compared to those with negative results.
+- Range: There is a wider range of pregnancies among patients with negative biopsy results, indicating more variability.
+- Outliers: There are a few outliers with a high number of pregnancies in both groups.
+Overall, the graph suggests that there might be a slight association between a higher number of pregnancies and a positive biopsy result. It's not clear, so we need further advance techniques o analyse it.
+> Visual analysis of Hormonal contraceptives effect acc. to bopsy Result
+
+> Visual Exploration of Hormonal Contraceptives According to Biopsy Results
+```R
 # Distribution of Hormonal Contraceptives According to Biopsy Results
 ggplot(cancer_data, aes(x = as.factor(Hormonal.Contraceptives), fill = as.factor(Biopsy))) +
   geom_bar(position = "dodge") +
@@ -161,7 +198,16 @@ ggplot(cancer_data, aes(x = as.factor(Hormonal.Contraceptives), fill = as.factor
   scale_x_discrete(labels = c("0" = "Non-User", "1" = "User")) +  # Update labels as necessary
   scale_fill_discrete(name = "Biopsy Result", labels = c("Negative", "Positive")) +
   theme_minimal()
+```
+![Hormonal Contraceptive vs Biopsy](https://github.com/user-attachments/assets/690650e7-3c60-48ec-a706-2374bf401cd6)
+The graph shows how the use of hormonal contraceptives is distributed among patients who had negative and positive biopsy results:
 
+- Non-Users: The majority of patients in both groups are non-users of hormonal contraceptives.
+- Users: There is a higher proportion of hormonal contraceptive users among patients with negative biopsy results compared to those with positive results.
+Overall, the graph suggests that there might be a slight association between the use of hormonal contraceptives and a negative biopsy result, but further analysis is required.
+
+> Visual Exploration of Age distribution According to Biopsy Result
+```R
 # Calculate average age by biopsy result
 avg_age <- aggregate(Age ~ Biopsy, data = cancer_data, FUN = mean)
 
@@ -174,6 +220,13 @@ ggplot(cancer_data, aes(x = as.factor(Biopsy), y = Age, fill = as.factor(Biopsy)
   scale_fill_discrete(name = "Biopsy Result", labels = c("Negative", "Positive")) +
   theme_minimal()
 ```
+![Age vs Biopsy distribution](https://github.com/user-attachments/assets/0d69057b-dd2e-4a52-a149-692c96bf5ada)
+
+This boxplot displays the age distribution for individuals with positive and negative biopsy results.
+
+- Negative Biopsy Results (red): Ages are primarily between 20 and 40, with a few outliers reaching up to 80.
+- Positive Biopsy Results (blue): Ages also mostly fall between 20 and 40, with a slightly higher median age compared to the negative group, but a similar overall range.
+- The comparison suggests no significant age difference between the two groups, though the positive group shows a slightly higher central tendency.
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 ## **Correlation Matrix and Anova Test**
@@ -195,7 +248,7 @@ ggplot(correlation_melted, aes(Var1, Var2, fill = value)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
   labs(title = "Correlation Matrix Heatmap", x = "Variables", y = "Variables")
 ```
-# Key Observations from the Correlation Heatmap: -
+- Key Observations from the Correlation Heatmap: -
 
 1. Strong Positive Correlations: (Strong red colour)
 
@@ -235,19 +288,19 @@ for (num_var in numerical_df) {
   }
 }
 ```
-# The ANOVA test results indicate significant associations between various health and lifestyle variables and demographic factors such as age and smoking habits, highlighting the following key findings:
+- The ANOVA test results indicate significant associations between various health and lifestyle variables and demographic factors such as age and smoking habits, highlighting the following key findings:
 
-Age: Strongly significant associations with IUD usage (p < 0.001), cancer diagnosis (p = 0.0017), HPV diagnosis (p = 0.0039), and Schiller Test results (p = 0.0034) suggest that age influences these health-related outcomes.
+| Age: Strongly significant associations with IUD usage (p < 0.001), cancer diagnosis (p = 0.0017), HPV diagnosis (p = 0.0039), and Schiller Test results (p = 0.0034) suggest that age influences these health-related outcomes.
 
-Number of Sexual Partners: A significant correlation with smoking status (p < 0.001) implies that smoking behavior may relate to an individual's sexual history.
+| Number of Sexual Partners: A significant correlation with smoking status (p < 0.001) implies that smoking behavior may relate to an individual's sexual history.
 
-First Sexual Intercourse Age: Smoking (p = 0.0002) and certain STDs (syphilis: p = 0.0045; vaginal condylomatosis: p = 0.033) are significantly associated with the age at which individuals first engage in sexual activity.
+| First Sexual Intercourse Age: Smoking (p = 0.0002) and certain STDs (syphilis: p = 0.0045; vaginal condylomatosis: p = 0.033) are significantly associated with the age at which individuals first engage in sexual activity.
 
-Number of Pregnancies: Significant relationships are observed with IUD usage (p < 0.001), hormonal contraceptives (p = 0.0027), and STDs (syphilis: p = 0.00003), indicating these factors may affect pregnancy frequency.
+| Number of Pregnancies: Significant relationships are observed with IUD usage (p < 0.001), hormonal contraceptives (p = 0.0027), and STDs (syphilis: p = 0.00003), indicating these factors may affect pregnancy frequency.
 
-Smoking History: Both smoking duration (years) and intensity (packs/year) show a strong association with smoking status (p < 0.001), along with significant correlations with certain STDs (HIV: p = 0.0095; Hepatitis B: p = 0.0042) and Schiller Test results (p = 0.0064).
+| Smoking History: Both smoking duration (years) and intensity (packs/year) show a strong association with smoking status (p < 0.001), along with significant correlations with certain STDs (HIV: p = 0.0095; Hepatitis B: p = 0.0042) and Schiller Test results (p = 0.0064).
 
-Biopsy Results:
+| Biopsy Results:
 
 In contrast, the ANOVA results indicate that none of the analyzed demographic and health factors exhibit statistically significant correlations with biopsy results, as all p-values exceed the conventional significance threshold of 0.05. The only borderline case is the association between smoking years and biopsy (p = 0.0759), which suggests a potential trend but does not meet the criteria for statistical significance.
 
